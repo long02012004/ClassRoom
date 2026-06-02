@@ -1,0 +1,300 @@
+@use "../../../components/Styles/variables.module" as vars;
+
+.classroomsPage {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 1300px;
+  margin: 0 auto;
+  font-family: vars.$font-main;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+
+  .headerText {
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: vars.$dark-text;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.5px;
+    }
+
+    p {
+      font-size: 0.875rem;
+      color: vars.$text-sub;
+      margin: 0;
+    }
+  }
+
+  .btnCreateHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: vars.$primary;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(254, 103, 71, 0.15);
+    transition: vars.$transition-fast;
+
+    &:hover {
+      background: #e0583b;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(254, 103, 71, 0.25);
+    }
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .btnCreateHeader {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+.classesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.classCard {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: vars.$transition-normal;
+  text-align: left;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .cardTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .iconBox {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(254, 103, 71, 0.08);
+      color: vars.$primary;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .subjectTag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: vars.$primary;
+      background: rgba(254, 103, 71, 0.08);
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+  }
+
+  .cardMiddle {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .classTitle {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: vars.$dark-text;
+      margin: 0;
+    }
+
+    .codeRow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: vars.$text-sub;
+      font-size: 0.8rem;
+      
+      strong {
+        color: vars.$dark-text;
+        font-family: vars.$font-mono;
+      }
+    }
+  }
+
+  .cardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f8fafc;
+    padding-top: 16px;
+    margin-top: 4px;
+
+    .studentsCount {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: vars.$text-sub;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .btnManage {
+      padding: 6px 12px;
+      background: #f1f5f9;
+      color: vars.$text-sub;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: vars.$transition-fast;
+
+      &:hover {
+        background: vars.$primary;
+        color: white;
+      }
+    }
+  }
+}
+
+/* POPUP MODAL */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 12, 32, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 9999;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: vars.$dark-text;
+    margin: 0 0 16px 0;
+  }
+
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: vars.$dark-text;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      outline: none;
+      transition: vars.$transition-fast;
+      color: vars.$dark-text;
+      font-family: inherit;
+
+      &:focus {
+        border-color: vars.$primary;
+        box-shadow: 0 0 0 3px rgba(254, 103, 71, 0.12);
+      }
+    }
+  }
+
+  .modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+
+    button {
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: vars.$transition-fast;
+    }
+
+    .btnCancel {
+      background: #f1f5f9;
+      border: none;
+      color: vars.$text-sub;
+
+      &:hover {
+        background: #e2e8f0;
+        color: vars.$dark-text;
+      }
+    }
+
+    .btnConfirm {
+      background: vars.$primary;
+      border: none;
+      color: white;
+      box-shadow: 0 4px 10px rgba(254, 103, 71, 0.2);
+
+      &:hover {
+        background: #e0583b;
+        box-shadow: 0 6px 14px rgba(254, 103, 71, 0.3);
+      }
+    }
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

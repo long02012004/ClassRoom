@@ -1,6 +1,9 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Register from "../pages/Register/Register";
-import Dashboard from "../pages/Dashboard/Dashboard";
+import Register from "../pages/Auth/Register/Register";
+import Dashboard from "../pages/Dashboard";
+import Classrooms from "../pages/Classrooms";
+import Assignments from "../pages/Assignments";
+import AssignmentDetail from "../pages/Student/Assignments/AssignmentDetail";
 import MainLayout from "../components/Layout/MainLayout.tsx";
 
 export const router = createBrowserRouter([
@@ -17,7 +20,19 @@ export const router = createBrowserRouter([
         path: "dashboard",
         element: <Dashboard />,
       },
-      // Các trang con khác của giáo viên (ví dụ: classrooms, attendance...) sẽ thêm ở đây
+      {
+        path: "classrooms",
+        element: <Classrooms />,
+      },
+      {
+        path: "assignments",
+        element: <Assignments />,
+      },
+      {
+        path: "assignments/:id",
+        element: <AssignmentDetail />,
+      },
+      // Các trang con khác của giáo viên (ví dụ: attendance...) sẽ thêm ở đây
     ],
   },
   {

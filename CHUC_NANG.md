@@ -57,3 +57,25 @@ Tài liệu này mô tả các chức năng được phân loại từ cơ bản
 ### 3. Gửi thông báo tự động (Notifications)
 * [cite_start]Tự động gửi email nhắc nhở học sinh khi sắp đến thời hạn nộp bài tập (Deadline)[cite: 24].
 * [cite_start]Gửi báo cáo kết quả học tập, bảng điểm định kỳ trực tiếp tới email của phụ huynh[cite: 24].
+---
+
+## IV. Phân Hệ Dành Cho Học Sinh (Student Portal)
+*Nhóm chức năng dành riêng cho trải nghiệm học tập và tương tác của học sinh.*
+
+### 1. Tham gia lớp học (Join Class)
+* **Cơ chế:** Học sinh sau khi đăng nhập sẽ tham gia vào lớp học bằng cách nhập **Mã code duy nhất** do giáo viên cung cấp.
+* **Quản lý:** Hiển thị danh sách các lớp học mà học sinh đó đã tham gia thành công dưới dạng các thẻ (Card) trực quan.
+
+### 2. Theo dõi học tập & Chuyên cần (Learning & Attendance Tracking)
+* **Xem bảng tin:** Học sinh xem được các thông báo, dặn dò của giáo viên trên bảng tin lớp học và có thể tham gia bình luận hỏi đáp.
+* **Theo dõi chuyên cần:** Xem lịch sử điểm danh cá nhân (Tổng số buổi có mặt, số buổi đi muộn, số buổi vắng) để tự điều chỉnh việc đi học.
+
+### 3. Nộp bài tập & Xem tài liệu (Assignments & Materials)
+* **Tải tài liệu:** Học sinh xem và tải về các tài liệu học tập (PDF, Word, video...) do giáo viên chia sẻ.
+* **Nộp bài tập:** Xem danh sách bài tập về nhà sắp đến hạn. Học sinh tiến hành nộp bài bằng cách đính kèm file hoặc nhập nội dung văn bản trước khi hết Deadline.
+* **Xem kết quả:** Nhận thông báo điểm số và lời phê nhận xét từ giáo viên ngay khi bài tập được chấm xong.
+
+### 4. Làm bài thi trắc nghiệm Online (Online Examination)
+* **Làm bài:** Vào phòng thi trắc nghiệm theo thời gian quy định của giáo viên, giao diện tích hợp đồng hồ đếm ngược tự động.
+* **Nộp bài tự động:** Hệ thống tự động thu bài và khóa chọn đáp án khi hết giờ làm bài.
+* **Biết kết quả:** Hiển thị số câu đúng/sai và số điểm đạt được ngay sau khi bấm nộp bài (nếu giáo viên cho phép cấu hình xem điểm trước).

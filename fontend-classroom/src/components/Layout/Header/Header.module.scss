@@ -1,0 +1,165 @@
+@use "../../Styles/variables.module" as vars;
+
+.header {
+  height: 70px;
+  padding: 0 32px;
+  background: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  font-family: vars.$font-main;
+
+  @media (max-width: 768px) {
+    display: none; // Trực quan hóa Header di động riêng trong Navbar.tsx
+  }
+}
+
+.navTabs {
+  display: flex;
+  gap: 24px;
+  height: 100%;
+  align-items: center;
+
+  .tabItem {
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: vars.$text-sub;
+    cursor: pointer;
+    padding: 23px 4px; // Đưa tab căn giữa chiều cao header
+    position: relative;
+    transition: vars.$transition-fast;
+    font-family: inherit;
+
+    &:hover {
+      color: vars.$dark-text;
+    }
+
+    &.active {
+      color: #10B981; // Màu Xanh Lá như ảnh mẫu
+      font-weight: 700;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -1px; // Khớp khít đường border-bottom của header
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #10B981;
+        border-radius: 99px 99px 0 0;
+      }
+    }
+  }
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .searchIcon {
+    position: absolute;
+    left: 14px;
+    color: vars.$text-sub;
+    pointer-events: none;
+  }
+
+  input {
+    background: #f1f5f9;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    padding: 8px 16px 8px 38px;
+    font-size: 0.85rem;
+    width: 200px;
+    outline: none;
+    transition: vars.$transition-normal;
+    color: vars.$dark-text;
+    font-family: inherit;
+
+    &:focus {
+      background: white;
+      border-color: #cbd5e1;
+      width: 250px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+  }
+}
+
+.notificationBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: vars.$dark-text;
+  position: relative;
+  padding: 8px;
+  border-radius: 50%;
+  transition: vars.$transition-fast;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #f1f5f9;
+  }
+
+  .bellBadge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background: vars.$primary; // Đỏ/Cam thương hiệu
+    border-radius: 50%;
+    border: 1.5px solid white;
+  }
+}
+
+.profileWidget {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-left: 1px solid #e2e8f0;
+  padding-left: 20px;
+  height: 36px;
+
+  .profileText {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+  }
+
+  .profileName {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: vars.$dark-text;
+    line-height: 1.2;
+  }
+
+  .profileRole {
+    font-size: 0.7rem;
+    color: vars.$text-sub;
+    font-weight: 500;
+    margin-top: 1px;
+  }
+
+  .avatarImg {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: vars.$shadow-sm;
+  }
+}
