@@ -1,0 +1,409 @@
+@use "../../Styles/variables.module" as vars;
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.75); // Premium glassmorphism
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  z-index: 9999;
+  transition: vars.$transition-normal;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  
+  &.scrolled {
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.navContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-family: system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: vars.$dark-text;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+
+  .logoIcon {
+    font-size: 1.6rem;
+  }
+
+  .logoText {
+    letter-spacing: -0.5px;
+  }
+
+  .accentText {
+    color: vars.$primary;
+  }
+}
+
+.navLinks {
+  display: flex;
+  gap: 28px;
+
+  a {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: vars.$text-sub;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: vars.$transition-fast;
+
+    &:hover {
+      color: vars.$primary;
+      background: rgba(vars.$primary, 0.05);
+    }
+
+    &.active {
+      color: vars.$primary;
+      background: rgba(vars.$primary, 0.08);
+      font-weight: 700;
+    }
+  }
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.authGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.loginBtn {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: vars.$dark-text;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: vars.$transition-fast;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+.ctaBtn {
+  background: vars.$primary;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(vars.$primary, 0.3);
+  transition: vars.$transition-normal;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(vars.$primary, 0.4);
+    filter: brightness(1.05);
+  }
+}
+
+.userDropdown {
+  position: relative;
+  
+  .userTrigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 30px;
+    cursor: pointer;
+    transition: vars.$transition-fast;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.06);
+      border-color: rgba(vars.$primary, 0.2);
+    }
+
+    .avatarImg {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .userName {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: vars.$dark-text;
+    }
+
+    .arrowIcon {
+      color: vars.$text-sub;
+      transition: transform 0.2s ease;
+    }
+  }
+
+  &:hover {
+    .dropdownMenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .arrowIcon {
+      transform: rotate(180deg);
+      color: vars.$primary;
+    }
+  }
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background: white;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: vars.$shadow-lg;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: vars.$transition-normal;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdownHeader {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  margin-bottom: 6px;
+
+  span {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: vars.$text-sub;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .userDisplayName {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: vars.$dark-text;
+    margin-top: 2px;
+  }
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  color: vars.$text-sub;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: vars.$transition-fast;
+
+  &:hover {
+    background: rgba(vars.$primary, 0.06);
+    color: vars.$primary;
+    
+    svg {
+      transform: scale(1.05);
+    }
+  }
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.05);
+  margin: 6px 0;
+}
+
+.logoutItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  color: vars.$danger;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: vars.$transition-fast;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(vars.$danger, 0.08);
+  }
+}
+
+.mobileMenuBtn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: vars.$dark-text;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: vars.$transition-fast;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+.mobileDrawer {
+  display: none;
+}
+
+/* --- MOBILE RESPONSIVE STYLES --- */
+@media (max-width: 1024px) {
+  .navLinks {
+    display: none;
+  }
+
+  .navActions {
+    display: none;
+  }
+
+  .mobileMenuBtn {
+    display: block;
+  }
+
+  .mobileDrawer {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: vars.$shadow-lg;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9998;
+
+    &.open {
+      max-height: 450px;
+    }
+  }
+
+  .mobileNavLinks {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 8px;
+
+    a, .mobileMenuItem {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: vars.$text-sub;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: vars.$transition-fast;
+
+      &:hover, &.active {
+        color: vars.$primary;
+        background: rgba(vars.$primary, 0.06);
+      }
+    }
+
+    .mobileDivider {
+      height: 1px;
+      background: rgba(0, 0, 0, 0.05);
+      margin: 8px 0;
+    }
+
+    .logout {
+      color: vars.$danger;
+      &:hover {
+        background: rgba(vars.$danger, 0.08);
+        color: vars.$danger;
+      }
+    }
+  }
+
+  .mobileAuthBtns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 16px 16px;
+
+    a {
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+    }
+
+    .mobileLoginBtn {
+      color: vars.$dark-text;
+      background: rgba(0, 0, 0, 0.05);
+      &:hover {
+        background: rgba(0, 0, 0, 0.08);
+      }
+    }
+
+    .mobileJoinBtn {
+      color: white;
+      background: vars.$primary;
+      box-shadow: 0 4px 12px rgba(vars.$primary, 0.2);
+      &:hover {
+        filter: brightness(1.05);
+      }
+    }
+  }
+
+  .menuOverlay {
+    position: fixed;
+    top: 72px;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(2px);
+    z-index: 9997;
+  }
+}

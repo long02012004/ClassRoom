@@ -1,0 +1,50 @@
+// -------------------------------------------------------------
+// HỆ THỐNG THIẾT KẾ - BIẾN MÀU SẮC CHO ỨNG DỤNG LỚP HỌC
+// Đồng bộ mã màu & các design tokens nhất quán
+// -------------------------------------------------------------
+
+// --- 1. MÀU THƯƠNG HIỆU CHỦ ĐẠO ---
+$primary: #FE6747;       // Cam San Hô - Điểm nhấn thương hiệu: Nút bấm quan trọng (Đăng ký, Đăng nhập), các icon chính, hoặc viền cấu trúc nổi bật.
+$secondary: #3BF3BB;     // Xanh Bạc Hà - Dùng cho trạng thái "Có mặt" khi điểm danh, các chỉ số tăng trưởng tích cực, hoặc nút "Tạo mới lớp học".
+$dark-text: #171B27;     // Đen Midnight - Màu chữ chính (Text Primary) cho toàn bộ trang web để bảo vệ mắt giáo viên, hoặc nền sidebar.
+$light-bg: #FFFFFF;      // Trắng Tinh - Dùng làm nền cho các chiếc Card lớp học, bảng điểm danh, form nhập liệu.
+
+// --- 2. MÀU BỔ TRỢ ĐƯỢC GỢI Ý ---
+$bg-main: #F3F4F6;       // Xám Sáng - Làm màu nền tổng bao phủ toàn bộ trang (Body Background), tạo chiều sâu nổi khối cho các Card trắng.
+$text-sub: #6B7280;      // Xám Mát - Dùng cho chữ mô tả phụ, mã code lớp học, ngày tháng năm để giảm bớt độ nổi bật so với chữ chính.
+$warning: #FBBF24;       // Vàng Hổ Phách - Dùng cho trạng thái học sinh đi "Muộn", bài tập sắp đến hạn nộp (Deadline).
+$danger: #F87171;        // Đỏ Dịu - Dùng cho trạng thái học sinh "Vắng mặt", nút "Xóa lớp học" (tone đỏ dịu tránh bị gắt).
+
+// --- 3. MÀU TRẠNG THÁI HỆ THỐNG ---
+$success: $secondary;
+$info: #3B82F6;          // Xanh Dương - Thông báo hệ thống chung, hướng dẫn hoặc mẹo nhanh.
+
+// --- 4. HIỆU ỨNG BÓNG ĐỔ (SHADOWS) ---
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.05);
+
+// --- 5. ĐƯỜNG VIỀN & BO GÓC (BORDERS & SHAPES) ---
+$border-color: rgba(229, 231, 235, 0.8);
+$border-radius-sm: 8px;
+$border-radius-md: 12px;
+$border-radius-lg: 16px;
+
+// --- 6. HIỆU ỨNG CHUYỂN ĐỘNG (TRANSITIONS) ---
+$transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// --- 7. XUẤT BIẾN ĐỂ SỬ DỤNG TRONG JS/TS ---
+:export {
+  primary: $primary;
+  secondary: $secondary;
+  darkText: $dark-text;
+  lightBg: $light-bg;
+  bgMain: $bg-main;
+  textSub: $text-sub;
+  warning: $warning;
+  danger: $danger;
+  success: $success;
+  info: $info;
+}
