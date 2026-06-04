@@ -201,44 +201,86 @@
 .modalContent {
   background: white;
   border-radius: 16px;
-  padding: 28px;
   width: 100%;
   max-width: 440px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
+  overflow: hidden;
 
-  h3 {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: vars.$dark-text;
-    margin: 0 0 16px 0;
+  .modalHeader {
+    background: #ff6b4a; /* Orange background matching design */
+    padding: 32px 28px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    color: white;
+
+    .headerText {
+      h3 {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin: 0 0 6px 0;
+        color: white;
+      }
+      p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.9);
+      }
+    }
+
+    .btnClose {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+      padding: 0;
+      
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .modalBody {
+    padding: 24px 28px 28px;
+  }
+
+  .formRow {
+    display: flex;
+    gap: 16px;
+    .formGroup {
+      flex: 1;
+    }
   }
 
   .formGroup {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 16px;
+    gap: 8px;
+    margin-bottom: 20px;
 
     label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: vars.$dark-text;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #334155;
     }
 
-    input {
+    input, select {
       width: 100%;
-      padding: 11px 14px;
+      padding: 12px 14px;
       border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      font-size: 0.85rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
       outline: none;
       transition: vars.$transition-fast;
       color: vars.$dark-text;
       font-family: inherit;
+      background: white;
 
       &:focus {
         border-color: vars.$primary;
@@ -249,14 +291,14 @@
 
   .modalActions {
     display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 32px;
 
     button {
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-size: 0.85rem;
+      padding: 12px 24px;
+      border-radius: 20px;
+      font-size: 0.9rem;
       font-weight: 700;
       cursor: pointer;
       font-family: inherit;
@@ -264,25 +306,24 @@
     }
 
     .btnCancel {
-      background: #f1f5f9;
+      background: transparent;
       border: none;
-      color: vars.$text-sub;
+      color: #ef4444; /* Red color for cancel */
 
       &:hover {
-        background: #e2e8f0;
-        color: vars.$dark-text;
+        background: #fef2f2;
       }
     }
 
     .btnConfirm {
-      background: vars.$primary;
+      background: #ff6b4a; /* Orange matching header */
       border: none;
       color: white;
-      box-shadow: 0 4px 10px rgba(254, 103, 71, 0.2);
+      box-shadow: 0 4px 10px rgba(255, 107, 74, 0.2);
 
       &:hover {
         background: #e0583b;
-        box-shadow: 0 6px 14px rgba(254, 103, 71, 0.3);
+        box-shadow: 0 6px 14px rgba(255, 107, 74, 0.3);
       }
     }
   }

@@ -9,7 +9,8 @@ import {
   User,
   SignOut,
   List,
-  X
+  X,
+  CalendarBlank
 } from "phosphor-react";
 import styles from "./Navbar.module.scss";
 
@@ -47,7 +48,7 @@ const NavBar: React.FC = () => {
         </button>
         
         <Link to="/dashboard" className={styles.mobileLogo}>
-          <span className={styles.logoText}>Classroom</span>
+          <span className={styles.logoText}>Lớp học</span>
         </Link>
 
         {isLoggedIn ? (
@@ -72,7 +73,7 @@ const NavBar: React.FC = () => {
         <div className={styles.logoContainer}>
           <Link to="/dashboard" className={styles.logo} onClick={() => setIsMenuOpen(false)}>
             <span className={styles.logoText}>
-              Classroom<span className={styles.accentText}>Manager</span>
+              Quản lý<span className={styles.accentText}> Lớp học</span>
             </span>
           </Link>
           <div className={styles.logoSubtitle}>
@@ -118,9 +119,29 @@ const NavBar: React.FC = () => {
                 <ClipboardText size={20} weight={isActive("/assignments") ? "fill" : "regular"} />
                 <span>Bài tập</span>
               </Link>
+              <Link 
+                to="/profile" 
+                className={`${styles.navItem} ${isActive("/profile") ? styles.active : ""}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User size={20} weight={isActive("/profile") ? "fill" : "regular"} />
+                <span>Hồ sơ</span>
+              </Link>
+            </>
+          ) : userRole === "ADMIN" ? (
+            // Menu dành cho Admin
+            <>
+              <Link 
+                to="/admin/teachers" 
+                className={`${styles.navItem} ${isActive("/admin/teachers") ? styles.active : ""}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User size={20} weight={isActive("/admin/teachers") ? "fill" : "regular"} />
+                <span>Giáo viên</span>
+              </Link>
             </>
           ) : (
-            // Menu dành cho giáo viên/admin
+            // Menu dành cho giáo viên
             <>
               <Link 
                 to="/classrooms" 
@@ -154,31 +175,23 @@ const NavBar: React.FC = () => {
                 <ClipboardText size={20} weight={isActive("/assignments") ? "fill" : "regular"} />
                 <span>Bài tập</span>
               </Link>
+              <Link 
+                to="/schedule" 
+                className={`${styles.navItem} ${isActive("/schedule") ? styles.active : ""}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <CalendarBlank size={20} weight={isActive("/schedule") ? "fill" : "regular"} />
+                <span>Lịch dạy</span>
+              </Link>
             </>
           )}
 
-          <Link 
-            to="/profile" 
-            className={`${styles.navItem} ${isActive("/profile") ? styles.active : ""}`}
-            onClick={() => setIsMenuOpen(false)}
-          >
-            <User size={20} weight={isActive("/profile") ? "fill" : "regular"} />
-            <span>Hồ sơ</span>
-          </Link>
+
         </nav>
 
         {/* Nút Hành Động Ở Góc Sidebar */}
         <div className={styles.actionBtnContainer}>
-          {userRole === "STUDENT" ? (
-            <button 
-              className={styles.newClassBtn}
-              onClick={() => {
-                window.dispatchEvent(new Event("open-join-class-modal"));
-              }}
-            >
-              Tham gia lớp
-            </button>
-          ) : (
+          {userRole === "TEACHER" ? (
             <button 
               className={styles.newClassBtn}
               onClick={() => {
@@ -187,7 +200,7 @@ const NavBar: React.FC = () => {
             >
               Tạo lớp mới
             </button>
-          )}
+          ) : null}
         </div>
 
         {/* Khối Thông Tin Người Dùng ở đáy Sidebar */}

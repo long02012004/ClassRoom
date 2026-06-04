@@ -8,6 +8,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
+  password?: string;
   role: "teacher" | "student" | "admin";
   createdAt: string;
 }
@@ -31,6 +32,8 @@ export interface Grades {
 export interface Student {
   _id: string;
   name: string;
+  email?: string;
+  password?: string;
   studentCode: string;
   parentPhone: string;
   classId: string;
@@ -64,6 +67,10 @@ export interface Announcement {
   authorName: string;
   createdAt: string;
   comments: Comment[];
+  type?: "announcement" | "assignment" | "reminder" | "material";
+  files?: { name: string; size: string; url: string }[];
+  images?: string[];
+  likes?: number;
 }
 
 export interface Submission {
@@ -128,8 +135,9 @@ const INITIAL_DATABASE: DbSchema = {
   users: [
     {
       _id: "teacher-1",
-      name: "Thầy Nguyễn Văn A",
+      name: "Cô Nguyễn Thị Mai",
       email: "teacher@classroom.com",
+      password: "password123",
       role: "teacher",
       createdAt: "2026-06-01T08:00:00.000Z"
     },
@@ -137,6 +145,7 @@ const INITIAL_DATABASE: DbSchema = {
       _id: "admin-1",
       name: "Quản trị viên",
       email: "admin@classroom.com",
+      password: "admin",
       role: "admin",
       createdAt: "2026-06-01T08:00:00.000Z"
     }
@@ -186,7 +195,9 @@ const INITIAL_DATABASE: DbSchema = {
   students: [
     {
       _id: "student-1",
-      name: "Trần Văn Bình",
+      name: "Học sinh A",
+      email: "student1@classroom.com",
+      password: "password123",
       studentCode: "HS2026001",
       parentPhone: "0905123456",
       classId: "class-6",
@@ -261,26 +272,59 @@ const INITIAL_DATABASE: DbSchema = {
   ],
   announcements: [
     {
-      _id: "ann-1",
+      _id: "ann-screenshot-1",
       classId: "class-6",
-      title: "Thông báo nghỉ học ngày 05/06",
-      content: "Do thầy có lịch tập huấn tại Sở Giáo dục nên lớp học thêm ngày thứ Sáu (05/06) sẽ được nghỉ. Các em ở nhà ôn tập và hoàn thành đầy đủ bài tập chương II thầy đã giao trên hệ thống nhé.",
-      authorName: "Thầy Nguyễn Văn A",
-      createdAt: "2026-06-02T15:30:00.000Z",
+      title: "Nhắc nhở nộp bài tập Toán (Chương Đạo hàm)",
+      content: "🚨 Nhắc nhở quan trọng: Cả lớp nhớ nộp bài tập Toán (Chương Đạo hàm) trên hệ thống trước 23h tối nay nhé. Bài tập này sẽ lấy điểm kiểm tra 15 phút.",
+      authorName: "Thầy Long",
+      createdAt: "2026-06-03T12:20:00.000Z",
       comments: [
         {
-          _id: "c-1",
-          authorName: "Trần Văn Bình",
-          content: "Dạ vâng ạ, chúc thầy công tác tốt!",
-          createdAt: "2026-06-02T15:45:00.000Z"
+          _id: "c-sc-1",
+          authorName: "Nguyễn Hoàng Nam",
+          content: "Dạ em nộp rồi ạ, thầy kiểm tra giúp em xem có bị lỗi file không nhé!",
+          createdAt: "2026-06-03T12:33:00.000Z"
         },
         {
-          _id: "c-2",
-          authorName: "Lê Thị Chi",
-          content: "Em nhận được thông tin rồi ạ.",
-          createdAt: "2026-06-02T16:00:00.000Z"
+          _id: "c-sc-2",
+          authorName: "Lê Minh Anh",
+          content: "Thầy ơi câu 5 trong file pdf bị nhầm đề bài hay sao ấy ạ?",
+          createdAt: "2026-06-03T12:35:00.000Z"
         }
-      ]
+      ],
+      type: "reminder",
+      files: [
+        { name: "BT_Dao_Ham_Tuan_4.pdf", size: "2.4 MB", url: "#" }
+      ],
+      likes: 12
+    },
+    {
+      _id: "ann-screenshot-2",
+      classId: "class-6",
+      title: "Tài liệu học tập: Slide bài giảng hôm nay",
+      content: "Chào cả lớp, đây là slide bài giảng hôm nay. Các em xem lại để chuẩn bị cho tiết học ngày mai nhé.",
+      authorName: "Thầy Long",
+      createdAt: "2026-06-03T10:35:00.000Z",
+      comments: [
+        {
+          _id: "c-sc-3",
+          authorName: "Lê Thị Chi",
+          content: "Slide chi tiết quá, em cảm ơn thầy ạ!",
+          createdAt: "2026-06-03T10:45:00.000Z"
+        },
+        {
+          _id: "c-sc-4",
+          authorName: "Học sinh A",
+          content: "Em đã tải slide về học rồi ạ.",
+          createdAt: "2026-06-03T11:00:00.000Z"
+        }
+      ],
+      type: "material",
+      images: [
+        "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=600&q=80",
+        "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80"
+      ],
+      likes: 24
     }
   ],
   assignments: [
@@ -294,7 +338,7 @@ const INITIAL_DATABASE: DbSchema = {
       submissions: [
         {
           studentId: "student-1",
-          studentName: "Trần Văn Bình",
+          studentName: "Học sinh A",
           submittedAt: "2026-06-03T10:00:00.000Z",
           fileUrl: "/bai_lam_binh.pdf",
           textAnswer: "Em đã hoàn thành đầy đủ bài tập tự luận thầy giao ạ.",
@@ -343,7 +387,7 @@ const INITIAL_DATABASE: DbSchema = {
       results: [
         {
           studentId: "student-1",
-          studentName: "Trần Văn Bình",
+          studentName: "Học sinh A",
           score: 10,
           totalQuestions: 3,
           submittedAt: "2026-06-02T19:30:00.000Z"
@@ -366,9 +410,9 @@ export const initMockDb = (): DbSchema => {
     parsedDb = null;
   }
 
-  const needsReset = !parsedDb || 
-                     !parsedDb.classrooms || 
-                     parsedDb.classrooms.some(c => c._id === "class-10a");
+  const needsReset = !parsedDb ||
+    !parsedDb.classrooms ||
+    parsedDb.students.some(s => s.name === "Trần Văn Bình");
 
   if (needsReset) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_DATABASE));
@@ -387,6 +431,27 @@ export const getMockDb = (): DbSchema => {
 
 export const saveMockDb = (db: DbSchema): void => {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(db));
+};
+
+// --- CRUD: USERS (NGƯỜI DÙNG) ---
+export const getMockTeachers = (): User[] => {
+  const db = getMockDb();
+  return db.users.filter(u => u.role === "teacher");
+};
+
+export const createMockTeacher = (name: string, email: string, password: string): User => {
+  const db = getMockDb();
+  const newTeacher: User = {
+    _id: "teacher_" + Date.now(),
+    name,
+    email,
+    password,
+    role: "teacher",
+    createdAt: new Date().toISOString()
+  };
+  db.users.push(newTeacher);
+  saveMockDb(db);
+  return newTeacher;
 };
 
 // --- CRUD: CLASSROOMS (LỚP HỌC) ---
@@ -435,7 +500,7 @@ export const deleteMockClassroom = (classId: string): boolean => {
   const db = getMockDb();
   const index = db.classrooms.findIndex(c => c._id === classId);
   if (index === -1) return false;
-  
+
   db.classrooms.splice(index, 1);
   // Xóa học sinh và dữ liệu liên quan thuộc lớp này
   db.students = db.students.filter(s => s.classId !== classId);
@@ -443,7 +508,7 @@ export const deleteMockClassroom = (classId: string): boolean => {
   db.announcements = db.announcements.filter(a => a.classId !== classId);
   db.assignments = db.assignments.filter(a => a.classId !== classId);
   db.quizzes = db.quizzes.filter(q => q.classId !== classId);
-  
+
   saveMockDb(db);
   return true;
 };
@@ -454,13 +519,15 @@ export const getMockStudents = (classId: string): Student[] => {
   return db.students.filter(s => s.classId === classId);
 };
 
-export const addMockStudent = (classId: string, name: string, parentPhone: string): Student => {
+export const addMockStudent = (classId: string, name: string, parentPhone: string, email?: string, password?: string): Student => {
   const db = getMockDb();
   const studentCode = "HS" + (2026000 + db.students.length + 1);
-  
+
   const newStudent: Student = {
     _id: "student_" + Date.now(),
     name,
+    email,
+    password,
     studentCode,
     parentPhone,
     classId,
@@ -482,12 +549,12 @@ export const deleteMockStudent = (studentId: string): boolean => {
   const index = db.students.findIndex(s => s._id === studentId);
   if (index === -1) return false;
   db.students.splice(index, 1);
-  
+
   // Xóa bản ghi điểm danh liên quan
   db.attendances.forEach(att => {
     att.records = att.records.filter(r => r.studentId !== studentId);
   });
-  
+
   saveMockDb(db);
   return true;
 };
@@ -547,7 +614,15 @@ export const getMockAnnouncements = (classId: string): Announcement[] => {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
-export const createMockAnnouncement = (classId: string, title: string, content: string, authorName: string): Announcement => {
+export const createMockAnnouncement = (
+  classId: string,
+  title: string,
+  content: string,
+  authorName: string,
+  type?: "announcement" | "assignment" | "reminder" | "material",
+  files?: { name: string; size: string; url: string }[],
+  images?: string[]
+): Announcement => {
   const db = getMockDb();
   const newAnn: Announcement = {
     _id: "ann_" + Date.now(),
@@ -556,7 +631,11 @@ export const createMockAnnouncement = (classId: string, title: string, content: 
     content,
     authorName,
     createdAt: new Date().toISOString(),
-    comments: []
+    comments: [],
+    type: type || "announcement",
+    files: files || [],
+    images: images || [],
+    likes: 0
   };
 
   db.announcements.push(newAnn);
@@ -605,10 +684,10 @@ export const createMockAssignment = (classId: string, title: string, description
 };
 
 export const submitMockAssignment = (
-  assignmentId: string, 
-  studentId: string, 
-  studentName: string, 
-  textAnswer?: string, 
+  assignmentId: string,
+  studentId: string,
+  studentName: string,
+  textAnswer?: string,
   fileUrl?: string
 ): Submission | null => {
   const db = getMockDb();
@@ -642,9 +721,9 @@ export const submitMockAssignment = (
 };
 
 export const gradeMockSubmission = (
-  assignmentId: string, 
-  studentId: string, 
-  grade: number, 
+  assignmentId: string,
+  studentId: string,
+  grade: number,
   feedback: string
 ): Submission | null => {
   const db = getMockDb();
@@ -670,9 +749,9 @@ export const getMockQuizzes = (classId: string): Quiz[] => {
 };
 
 export const createMockQuiz = (
-  classId: string, 
-  title: string, 
-  durationMinutes: number, 
+  classId: string,
+  title: string,
+  durationMinutes: number,
   questions: QuizQuestion[]
 ): Quiz => {
   const db = getMockDb();
@@ -692,10 +771,10 @@ export const createMockQuiz = (
 };
 
 export const submitMockQuizResult = (
-  quizId: string, 
-  studentId: string, 
-  studentName: string, 
-  score: number, 
+  quizId: string,
+  studentId: string,
+  studentName: string,
+  score: number,
   totalQuestions: number
 ): QuizResult | null => {
   const db = getMockDb();

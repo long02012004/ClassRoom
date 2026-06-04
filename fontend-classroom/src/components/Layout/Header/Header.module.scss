@@ -24,6 +24,26 @@
   height: 100%;
   align-items: center;
 
+  .brandLabel {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: vars.$dark-text;
+    margin-right: 8px;
+    border-right: 1px solid #e2e8f0;
+    padding-right: 20px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    letter-spacing: -0.5px;
+  }
+
+  .defaultBrand {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: vars.$dark-text;
+    letter-spacing: -0.5px;
+  }
+
   .tabItem {
     background: none;
     border: none;

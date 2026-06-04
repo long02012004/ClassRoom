@@ -33,8 +33,6 @@ export default function StudentDashboard() {
   const [pendingAssignmentsCount, setPendingAssignmentsCount] = useState<number>(0);
   const [studentAnnouncements, setStudentAnnouncements] = useState<any[]>([]);
   const [studentAssignments, setStudentAssignments] = useState<any[]>([]);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [classCodeInput, setClassCodeInput] = useState("");
 
   // Hàm tính điểm trung bình (GPA) dựa trên trọng số
   const calculateStudentGPA = (student: Student) => {
@@ -151,70 +149,7 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     loadData();
-
-    // Đăng ký lắng nghe sự kiện từ Sidebar
-    const handleOpenJoinClassModal = () => setShowJoinModal(true);
-    window.addEventListener("open-join-class-modal", handleOpenJoinClassModal);
-
-    return () => {
-      window.removeEventListener("open-join-class-modal", handleOpenJoinClassModal);
-    };
   }, [username]);
-
-  // Logic học sinh tham gia lớp học bằng mã Code
-  const handleJoinClass = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!classCodeInput.trim()) {
-      toast.error("Vui lòng nhập mã lớp học gồm 6 ký tự!");
-      return;
-    }
-
-    const db = getMockDb();
-    
-    // Mỗi học sinh chỉ học một môn và một thầy duy nhất
-    const alreadyJoinedAnyClass = db.students.some(
-      s => s.name.toLowerCase() === username.toLowerCase()
-    );
-
-    if (alreadyJoinedAnyClass) {
-      toast.error("Bạn đã tham gia một lớp học rồi. Mỗi học sinh chỉ học duy nhất một môn và một thầy cô!");
-      return;
-    }
-
-    const targetClass = db.classrooms.find(
-      c => c.classCode.toUpperCase() === classCodeInput.trim().toUpperCase()
-    );
-
-    if (!targetClass) {
-      toast.error("Mã lớp học không tồn tại! Vui lòng kiểm tra lại.");
-      return;
-    }
-
-    // Tạo thông tin học sinh giả lập gắn với lớp này
-    const newStudentId = "student_" + Date.now();
-    const studentCode = "HS" + (2026000 + db.students.length + 1);
-    const newStudent: Student = {
-      _id: newStudentId,
-      name: username,
-      studentCode,
-      parentPhone: "0900000000",
-      classId: targetClass._id,
-      grades: {
-        mouth: [],
-        fifteenMin: [],
-        midTerm: null,
-        finalTerm: null
-      }
-    };
-
-    db.students.push(newStudent);
-    localStorage.setItem("classroom_mock_db", JSON.stringify(db));
-
-    toast.success(`Chúc mừng bạn đã tham gia vào lớp "${targetClass.className}"!`, 3000);
-    setClassCodeInput("");
-    setShowJoinModal(false);
-    loadData(); // Tải lại toàn bộ giao diện học sinh
-  };
 
   // Định dạng ngày tháng
   const formatDate = (isoString: string) => {
@@ -509,49 +444,6 @@ export default function StudentDashboard() {
         </div>
       </section>
 
-      {/* FLOATING ACTION BUTTON */}
-      {classrooms.length === 0 && (
-        <button 
-          className={styles.floatingBtn} 
-          onClick={() => setShowJoinModal(true)}
-          title="Tham gia lớp học"
-          aria-label="Tham gia lớp học"
-        >
-          <Plus size={24} weight="bold" />
-        </button>
-      )}
-
-      {/* POPUP MODAL HỌC SINH THAM GIA LỚP BẰNG CODE */}
-      {showJoinModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowJoinModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <h3>Tham Gia Lớp Học</h3>
-            <form onSubmit={handleJoinClass}>
-              <div className={styles.formGroup}>
-                <label htmlFor="modalClassCode">Mã lớp học thêm</label>
-                <input
-                  id="modalClassCode"
-                  type="text"
-                  required
-                  maxLength={6}
-                  placeholder="Nhập 6 ký tự mã lớp (Ví dụ: TOAN10A)"
-                  value={classCodeInput}
-                  onChange={(e) => setClassCodeInput(e.target.value)}
-                  style={{ textTransform: "uppercase" }}
-                />
-              </div>
-              <div className={styles.modalActions}>
-                <button type="button" className={styles.btnCancel} onClick={() => setShowJoinModal(false)}>
-                  Hủy bỏ
-                </button>
-                <button type="submit" className={styles.btnConfirm}>
-                  Tham gia ngay
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

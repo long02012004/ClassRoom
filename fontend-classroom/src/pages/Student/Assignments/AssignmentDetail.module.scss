@@ -27,19 +27,18 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: #f1f5f9;
+  background: transparent;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: vars.$dark-text;
+  color: #EF4444;
   transition: vars.$transition-fast;
   flex-shrink: 0;
 
   &:hover {
-    background: #e2e8f0;
-    transform: translateX(-2px);
+    background: #fee2e2;
   }
 }
 
@@ -78,41 +77,48 @@
 }
 
 .subjectTag {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: vars.$primary;
-  letter-spacing: 0.8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #3B82F6;
+  text-transform: uppercase;
 }
 
 .statusBadge {
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
   &.pending {
-    background: rgba(245, 158, 11, 0.1);
-    color: #d97706;
+    background: #fee2e2;
+    color: #EF4444;
   }
 
   &.submitted {
-    background: rgba(16, 185, 129, 0.1);
+    background: #d1fae5;
     color: #10B981;
   }
 
   &.graded {
-    background: rgba(59, 130, 246, 0.1);
+    background: #dbeafe;
     color: #3B82F6;
   }
 
   &.late {
-    background: rgba(239, 68, 68, 0.1);
+    background: #fee2e2;
     color: #EF4444;
   }
 }
 
+.statusIcon {
+  margin-top: -1px;
+}
+
 .assignmentTitle {
-  font-size: 1.9rem;
+  font-size: 1.8rem;
   font-weight: 800;
   color: vars.$dark-text;
   margin: 0 0 24px 0;
@@ -131,18 +137,12 @@
 
 .metaItem {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
   background: #f8fafc;
-  border-radius: 14px;
-  padding: 16px 18px;
+  border-radius: 12px;
+  padding: 16px 20px;
   color: vars.$text-sub;
-
-  svg {
-    flex-shrink: 0;
-    margin-top: 2px;
-    color: vars.$primary;
-  }
 
   div {
     display: flex;
@@ -151,17 +151,30 @@
   }
 }
 
+.iconWrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.redIcon {
+    background: #fee2e2;
+    color: #EF4444;
+  }
+}
+
 .metaLabel {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: vars.$text-sub;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
 }
 
 .metaValue {
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: vars.$dark-text;
 }
 
@@ -175,27 +188,27 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: vars.$dark-text;
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0;
 }
 
 .description {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #475569;
-  line-height: 1.7;
-  margin: 0 0 12px 0;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
 }
 
 .requirementsList {
   padding-left: 20px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 
   li {
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     color: #475569;
     line-height: 1.6;
   }
@@ -203,7 +216,7 @@
 
 .attachmentsRow {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
@@ -211,15 +224,16 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #f8fafc;
+  background: white;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 14px 18px;
+  padding: 12px 16px;
   cursor: pointer;
   transition: vars.$transition-fast;
+  min-width: 240px;
 
   &:hover {
-    background: #f1f5f9;
+    background: #f8fafc;
     border-color: #cbd5e1;
     transform: translateY(-1px);
   }
@@ -231,24 +245,40 @@
   }
 }
 
+.fileIconWrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.pdfBg {
+    background: #fee2e2;
+  }
+  
+  &.docBg {
+    background: #e0f2fe;
+  }
+}
+
 .pdfIcon {
   color: #EF4444;
-  font-size: 24px;
 }
 
 .docIcon {
   color: #3B82F6;
-  font-size: 24px;
 }
 
 .fileName {
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: vars.$dark-text;
 }
 
 .fileSize {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: vars.$text-sub;
 }
 
@@ -270,58 +300,68 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .submissionTitle {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1.05rem;
-  font-weight: 800;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: vars.$dark-text;
   margin: 0;
 
   svg {
-    color: vars.$primary;
+    color: #EF4444;
   }
 }
 
 /* Drop Zone */
 .dropZone {
-  border: 2px dashed #cbd5e1;
-  border-radius: 14px;
+  border: 2px dashed #fca5a5;
+  border-radius: 12px;
   padding: 32px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #fafbfc;
+  background: white;
 
   &:hover, &.dragging {
-    border-color: vars.$primary;
-    background: rgba(254, 103, 71, 0.03);
+    border-color: #EF4444;
+    background: #fef2f2;
   }
 }
 
+.uploadIconContainer {
+  width: 44px;
+  height: 44px;
+  background: #fee2e2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
 .uploadIcon {
-  color: #94a3b8;
-  font-size: 32px;
+  color: #EF4444;
 }
 
 .dropText {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: vars.$dark-text;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #475569;
   margin: 0;
 }
 
 .dropSubText {
-  font-size: 0.78rem;
-  color: vars.$text-sub;
+  font-size: 0.8rem;
+  color: #94a3b8;
   margin: 0;
 }
 
@@ -333,7 +373,7 @@
   justify-content: center;
 
   span {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: vars.$dark-text;
     max-width: 180px;
@@ -364,34 +404,32 @@
 
 /* Note Textarea */
 .noteLabel {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: vars.$text-sub;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: vars.$dark-text;
+  margin-top: 8px;
 }
 
 .noteArea {
   width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 0.875rem;
+  padding: 14px;
+  font-size: 0.9rem;
   font-family: inherit;
   color: vars.$dark-text;
   resize: none;
   outline: none;
   transition: vars.$transition-fast;
   box-sizing: border-box;
-  background: #fafbfc;
+  background: #f8fafc;
 
   &::placeholder {
     color: #94a3b8;
   }
 
   &:focus {
-    border-color: vars.$primary;
-    box-shadow: 0 0 0 3px rgba(254, 103, 71, 0.1);
+    border-color: #fca5a5;
     background: white;
   }
 }
@@ -400,28 +438,22 @@
 .submitBtn {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #FE6747, #ff8c5a);
+  background: #FF6A3D;
   color: white;
   border: none;
-  border-radius: 14px;
+  border-radius: 8px;
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 6px 20px rgba(254, 103, 71, 0.35);
+  gap: 8px;
+  transition: all 0.25s;
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(254, 103, 71, 0.45);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
+    background: #e55a30;
   }
 
   &:disabled {
@@ -439,15 +471,108 @@
   50% { opacity: 0.5; }
 }
 
+.editNoteContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.infoIcon {
+  color: #64748b;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 .editNote {
-  font-size: 0.72rem;
-  color: vars.$text-sub;
-  text-align: center;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-style: italic;
   margin: 0;
+  line-height: 1.4;
+}
+
+/* --- ACTIVITY LOG CARD --- */
+.activityCard {
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 24px;
+  border: none;
+}
+
+.activityTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  margin: 0 0 20px 0;
+  text-transform: uppercase;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  padding-left: 12px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 23px;
+    top: 24px;
+    bottom: 24px;
+    width: 2px;
+    background: #e2e8f0;
+    z-index: 0;
+  }
+}
+
+.activityItem {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+
+.actIconWrapper {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  flex-shrink: 0;
+  background: white;
+
+  &.orangeBg {
+    background: #d97706;
+  }
+  &.greenBg {
+    background: #10B981;
+  }
+  &.blueBg {
+    background: #3B82F6;
+  }
+  &.grayBg {
+    background: white;
+    border: 2px solid #cbd5e1;
+  }
+}
+
+.actText {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: vars.$dark-text;
+  margin: 0 0 4px 0;
+}
+
+.actTime {
+  font-size: 0.8rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
 }
 
 /* Graded / Submitted states */
@@ -509,92 +634,6 @@
   font-size: 0.78rem !important;
   color: vars.$text-sub !important;
   font-weight: 400 !important;
-}
-
-/* --- ACTIVITY LOG CARD --- */
-.activityCard {
-  background: white;
-  border-radius: 20px;
-  padding: 20px 24px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-}
-
-.activityTitle {
-  font-size: 0.68rem;
-  font-weight: 800;
-  color: vars.$text-sub;
-  letter-spacing: 0.8px;
-  margin: 0 0 16px 0;
-  text-transform: uppercase;
-}
-
-.activityList {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  position: relative;
-  padding-left: 18px;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 5px;
-    top: 8px;
-    bottom: 8px;
-    width: 2px;
-    background: #f1f5f9;
-  }
-}
-
-.activityItem {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  position: relative;
-}
-
-.actDot {
-  position: absolute;
-  left: -18px;
-  top: 4px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid white;
-  flex-shrink: 0;
-  z-index: 1;
-
-  &.orange {
-    background: #FE6747;
-    box-shadow: 0 0 0 3px rgba(254, 103, 71, 0.2);
-  }
-  &.green {
-    background: #10B981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
-  }
-  &.blue {
-    background: #3B82F6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  }
-  &.gray {
-    background: #94a3b8;
-  }
-}
-
-.actText {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: vars.$dark-text;
-  margin: 0 0 3px 0;
-}
-
-.actTime {
-  font-size: 0.72rem;
-  color: vars.$text-sub;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 /* --- LOADING STATE --- */

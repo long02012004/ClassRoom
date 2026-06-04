@@ -12,6 +12,9 @@ import {
   CheckCircle,
   UploadSimple,
   X,
+  Bell,
+  Eye,
+  Info
 } from "phosphor-react";
 import { getMockDb, submitMockAssignment } from "../../../utils/mockDb.ts";
 import type { Assignment } from "../../../utils/mockDb.ts";
@@ -158,9 +161,9 @@ export default function AssignmentDetail() {
           <div className={styles.assignmentCard}>
             {/* Class + Status */}
             <div className={styles.cardTopRow}>
-              <span className={styles.subjectTag}>{className.toUpperCase()}</span>
+              <span className={styles.subjectTag}>{className.toUpperCase()} - CHUYÊN ĐỀ THƠ VIỆT NAM</span>
               <span className={`${styles.statusBadge} ${isGraded ? styles.graded : isSubmitted ? styles.submitted : isPastDeadline ? styles.late : styles.pending}`}>
-                {isGraded ? "✅ Đã chấm điểm" : isSubmitted ? "📤 Đã nộp bài" : isPastDeadline ? "❌ Quá hạn" : "⏳ Đang chờ nộp"}
+                {isGraded ? "✅ Đã chấm điểm" : isSubmitted ? "📤 Đã nộp bài" : isPastDeadline ? "❌ Quá hạn" : <><Clock size={14} weight="bold" className={styles.statusIcon}/> Đang chờ nộp</>}
               </span>
             </div>
 
@@ -169,14 +172,18 @@ export default function AssignmentDetail() {
             {/* Meta info */}
             <div className={styles.metaGrid}>
               <div className={styles.metaItem}>
-                <User size={16} weight="bold" />
+                <div className={`${styles.iconWrapper} ${styles.redIcon}`}>
+                  <User size={18} weight="fill" />
+                </div>
                 <div>
                   <span className={styles.metaLabel}>Giáo viên hướng dẫn</span>
                   <span className={styles.metaValue}>{teacherName}</span>
                 </div>
               </div>
               <div className={styles.metaItem}>
-                <CalendarBlank size={16} weight="bold" />
+                <div className={`${styles.iconWrapper} ${styles.redIcon}`}>
+                  <CalendarBlank size={18} weight="fill" />
+                </div>
                 <div>
                   <span className={styles.metaLabel}>Hạn chót nộp bài</span>
                   <span className={styles.metaValue}>{formatDate(assignment.deadline)}</span>
@@ -198,21 +205,25 @@ export default function AssignmentDetail() {
 
             {/* Attachments */}
             <h4 className={styles.sectionLabel} style={{ marginTop: 24 }}>
-              <FilePdf size={18} weight="fill" style={{ color: "#EF4444" }} />
+              <FilePdf size={20} weight="fill" style={{ color: "#EF4444" }} />
               Tài liệu đính kèm
             </h4>
             <div className={styles.attachmentsRow}>
               <div className={styles.attachFile}>
-                <FilePdf size={24} weight="fill" className={styles.pdfIcon} />
+                <div className={`${styles.fileIconWrapper} ${styles.pdfBg}`}>
+                  <FilePdf size={22} weight="fill" className={styles.pdfIcon} />
+                </div>
                 <div>
-                  <span className={styles.fileName}>Bai_tap_tu_luan.pdf</span>
+                  <span className={styles.fileName}>Van-ban-Song-X...</span>
                   <span className={styles.fileSize}>1.2 MB • PDF</span>
                 </div>
               </div>
               <div className={styles.attachFile}>
-                <FileDoc size={24} weight="fill" className={styles.docIcon} />
+                <div className={`${styles.fileIconWrapper} ${styles.docBg}`}>
+                  <FileDoc size={22} weight="fill" className={styles.docIcon} />
+                </div>
                 <div>
-                  <span className={styles.fileName}>Huong-dan-lam-bai.docx</span>
+                  <span className={styles.fileName}>Huong-dan-lam-...</span>
                   <span className={styles.fileSize}>450 KB • Word</span>
                 </div>
               </div>
@@ -273,7 +284,9 @@ export default function AssignmentDetail() {
                     </div>
                   ) : (
                     <>
-                      <UploadSimple size={32} className={styles.uploadIcon} />
+                      <div className={styles.uploadIconContainer}>
+                         <UploadSimple size={24} weight="bold" className={styles.uploadIcon} />
+                      </div>
                       <p className={styles.dropText}>Kéo và thả file vào đây</p>
                       <p className={styles.dropSubText}>Hoặc nhấn để chọn từ máy tính</p>
                     </>
@@ -305,9 +318,12 @@ export default function AssignmentDetail() {
                     </>
                   )}
                 </button>
-                <p className={styles.editNote}>
-                  Bạn có thể chỉnh sửa bài nộp trước thời hạn chót.
-                </p>
+                <div className={styles.editNoteContainer}>
+                  <Info size={16} className={styles.infoIcon} />
+                  <p className={styles.editNote}>
+                    Bạn có thể chỉnh sửa bài nộp trước thời hạn chót.
+                  </p>
+                </div>
               </>
             )}
           </div>
@@ -317,23 +333,25 @@ export default function AssignmentDetail() {
             <h4 className={styles.activityTitle}>LỊCH SỬ HOẠT ĐỘNG</h4>
             <div className={styles.activityList}>
               <div className={styles.activityItem}>
-                <span className={`${styles.actDot} ${styles.orange}`} />
+                <div className={`${styles.actIconWrapper} ${styles.orangeBg}`}>
+                  <Bell size={14} weight="fill" color="white" />
+                </div>
                 <div>
                   <p className={styles.actText}>Bài tập đã được giao</p>
                   <span className={styles.actTime}>
-                    <Clock size={12} />
-                    {new Date(assignment.createdAt).toLocaleDateString("vi-VN")} • {new Date(assignment.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                    2 ngày trước • 08:30
                   </span>
                 </div>
               </div>
 
               {isSubmitted && (
                 <div className={styles.activityItem}>
-                  <span className={`${styles.actDot} ${styles.green}`} />
+                  <div className={`${styles.actIconWrapper} ${styles.greenBg}`}>
+                    <CheckCircle size={14} weight="fill" color="white" />
+                  </div>
                   <div>
                     <p className={styles.actText}>Bạn đã nộp bài</p>
                     <span className={styles.actTime}>
-                      <Clock size={12} />
                       {new Date(mySubmission.submittedAt).toLocaleDateString("vi-VN")} • {new Date(mySubmission.submittedAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
@@ -342,11 +360,12 @@ export default function AssignmentDetail() {
 
               {isGraded && (
                 <div className={styles.activityItem}>
-                  <span className={`${styles.actDot} ${styles.blue}`} />
+                  <div className={`${styles.actIconWrapper} ${styles.blueBg}`}>
+                    <CheckCircle size={14} weight="fill" color="white" />
+                  </div>
                   <div>
                     <p className={styles.actText}>Giáo viên đã chấm điểm</p>
                     <span className={styles.actTime}>
-                      <Clock size={12} />
                       Điểm: {mySubmission.grade}/10
                     </span>
                   </div>
@@ -355,12 +374,13 @@ export default function AssignmentDetail() {
 
               {!isSubmitted && (
                 <div className={styles.activityItem}>
-                  <span className={`${styles.actDot} ${styles.gray}`} />
+                  <div className={`${styles.actIconWrapper} ${styles.grayBg}`}>
+                     <Eye size={14} weight="bold" color="#64748B" />
+                  </div>
                   <div>
                     <p className={styles.actText}>Bạn đã xem tài liệu đính kèm</p>
                     <span className={styles.actTime}>
-                      <Clock size={12} />
-                      {getTimeLeft(assignment.deadline)}
+                      1 ngày trước • 14:15
                     </span>
                   </div>
                 </div>

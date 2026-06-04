@@ -1,21 +1,35 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Register from "../pages/Auth/Register/Register";
+import Login from "../pages/Auth/Login/Login";
 import Dashboard from "../pages/Dashboard";
 import Classrooms from "../pages/Classrooms";
 import Assignments from "../pages/Assignments";
 import AssignmentDetail from "../pages/Student/Assignments/AssignmentDetail";
+import TakeExam from "../pages/Student/Exams/TakeExam";
+import AdminTeachers from "../pages/Admin/Teachers/AdminTeachers";
+import TeacherStudents from "../pages/Teacher/Students/TeacherStudents";
+import StudentResults from "../pages/Student/Results/StudentResults";
+import StudentProfile from "../pages/Student/Profile/StudentProfile";
+import TeacherClassroomDetail from "../pages/Teacher/ClassroomDetail/TeacherClassroomDetail";
 import MainLayout from "../components/Layout/MainLayout.tsx";
+import ProtectedRoute from "../components/Layout/ProtectedRoute.tsx";
+import Gradebook from "../pages/Gradebook";
+import Attendance from "../pages/Attendance";
+import Schedule from "../pages/Schedule";
 
 export const router = createBrowserRouter([
   {
-    path: "/register",
-    element: <Register />,
+    path: "/login",
+    element: <Login />,
   },
   {
-    // Áp dụng Layout chung (Navbar + Footer) cho hệ thống quản lý lớp học
+    // Cần phải đăng nhập mới được vào các trang bên trong
     path: "/",
-    element: <MainLayout />,
+    element: <ProtectedRoute />,
     children: [
+      {
+        path: "/",
+        element: <MainLayout />,
+        children: [
       {
         path: "dashboard",
         element: <Dashboard />,
@@ -25,6 +39,10 @@ export const router = createBrowserRouter([
         element: <Classrooms />,
       },
       {
+        path: "classrooms/:id",
+        element: <TeacherClassroomDetail />,
+      },
+      {
         path: "assignments",
         element: <Assignments />,
       },
@@ -32,13 +50,43 @@ export const router = createBrowserRouter([
         path: "assignments/:id",
         element: <AssignmentDetail />,
       },
-      // Các trang con khác của giáo viên (ví dụ: attendance...) sẽ thêm ở đây
+      {
+        path: "exams/:id",
+        element: <TakeExam />,
+      },
+      {
+        path: "gradebook",
+        element: <Gradebook />,
+      },
+      {
+        path: "profile",
+        element: <StudentProfile />,
+      },
+      {
+        path: "admin/teachers",
+        element: <AdminTeachers />,
+      },
+      {
+        path: "classrooms/:id/students",
+        element: <TeacherStudents />,
+      },
+      {
+        path: "attendance",
+        element: <Attendance />,
+      },
+      {
+        path: "schedule",
+        element: <Schedule />,
+      },
+      // Các trang con khác sẽ thêm ở đây
+        ],
+      },
     ],
   },
   {
-    // Nếu truy cập vào đường dẫn không tồn tại, tự động chuyển hướng về trang đăng ký
+    // Nếu truy cập vào đường dẫn không tồn tại, tự động chuyển hướng về trang đăng nhập
     path: "*",
-    element: <Navigate to="/register" replace />,
+    element: <Navigate to="/login" replace />,
   },
 ]);
 

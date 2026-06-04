@@ -236,53 +236,46 @@
   }
 }
 
-/* --- DOTTED PLACEHOLDER CARD --- */
-.placeholderCard {
-  background: rgba(254, 103, 71, 0.01);
-  border: 2px dashed rgba(254, 103, 71, 0.18);
+/* --- EMPTY STATE CARD --- */
+.emptyStateCard {
+  background: white;
+  border: 1px solid #f1f5f9;
   border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 24px;
+  padding: 40px 24px;
   min-height: 240px;
-  cursor: pointer;
-  transition: vars.$transition-normal;
   text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+  grid-column: 1 / -1;
 
-  &:hover {
-    background: rgba(254, 103, 71, 0.03);
-    border-color: vars.$primary;
-    transform: translateY(-4px);
-  }
-
-  .plusIconBox {
-    width: 48px;
-    height: 48px;
+  .emptyIconBox {
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    background: rgba(254, 103, 71, 0.08);
-    color: vars.$primary;
+    background: #f8fafc;
+    color: #94a3b8;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
     margin-bottom: 16px;
   }
 
   h4 {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 800;
-    color: vars.$primary;
-    margin: 0 0 6px 0;
+    color: vars.$dark-text;
+    margin: 0 0 8px 0;
   }
 
   p {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: vars.$text-sub;
     margin: 0;
-    max-width: 220px;
-    line-height: 1.4;
+    max-width: 320px;
+    line-height: 1.5;
   }
 }
 

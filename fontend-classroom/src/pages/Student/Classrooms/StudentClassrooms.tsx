@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Plus, User } from "phosphor-react";
+import { useNavigate } from "react-router-dom";
 import { getMockDb } from "../../../utils/mockDb.ts";
 import type { Classroom, Student } from "../../../utils/mockDb.ts";
 import { useToast } from "../../../components/Styles/ToastContext.tsx";
@@ -7,11 +8,10 @@ import styles from "./StudentClassrooms.module.scss";
 
 export default function StudentClassrooms() {
   const toast = useToast();
+  const navigate = useNavigate();
   const [username, setUsername] = useState<string>("Học sinh A");
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [attendanceRate, setAttendanceRate] = useState<number>(95);
-  const [showJoinModal, setShowJoinModal] = useState(false);
-  const [classCodeInput, setClassCodeInput] = useState("");
   const [studentCount, setStudentCount] = useState<number>(35);
 
   const loadData = () => {
@@ -53,74 +53,7 @@ export default function StudentClassrooms() {
 
   useEffect(() => {
     loadData();
-    const handleOpenJoinClassModal = () => setShowJoinModal(true);
-    window.addEventListener("open-join-class-modal", handleOpenJoinClassModal);
-    return () => {
-      window.removeEventListener("open-join-class-modal", handleOpenJoinClassModal);
-    };
   }, [username]);
-
-  const handleJoinClass = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!classCodeInput.trim()) {
-      toast.error("Vui lòng nhập mã lớp học!");
-      return;
-    }
-
-    const db = getMockDb();
-    
-    // Mỗi học sinh chỉ học một môn và một thầy duy nhất
-    const alreadyJoinedAnyClass = db.students.some(
-      s => s.name.toLowerCase() === username.toLowerCase()
-    );
-
-    if (alreadyJoinedAnyClass) {
-      toast.error("Bạn đã tham gia một lớp học rồi. Mỗi học sinh chỉ học duy nhất một môn và một thầy cô!");
-      return;
-    }
-
-    const targetClass = db.classrooms.find(
-      c => c.classCode.toUpperCase() === classCodeInput.trim().toUpperCase()
-    );
-
-    if (!targetClass) {
-      toast.error("Mã lớp học không tồn tại! Vui lòng kiểm tra lại.");
-      return;
-    }
-
-    // Tạo thông tin học sinh giả lập gắn với lớp này
-    const newStudentId = "student_" + Date.now();
-    const studentCode = "HS" + (2026000 + db.students.length + 1);
-    const newStudent: Student = {
-      _id: newStudentId,
-      name: username,
-      studentCode,
-      parentPhone: "0900000000",
-      classId: targetClass._id,
-      grades: {
-        mouth: [],
-        fifteenMin: [],
-        midTerm: null,
-        finalTerm: null
-      }
-    };
-
-    db.students.push(newStudent);
-    localStorage.setItem("classroom_mock_db", JSON.stringify(db));
-
-    toast.success(`Chúc mừng bạn đã tham gia vào lớp "${targetClass.className}"!`, 3000);
-    setClassCodeInput("");
-    setShowJoinModal(false);
-    loadData();
-  };
-
-  const handleJoinClick = () => {
-    if (classrooms.length >= 1) {
-      toast.error("Bạn đã học một lớp rồi. Mỗi học sinh chỉ học một môn và một thầy duy nhất!");
-    } else {
-      setShowJoinModal(true);
-    }
-  };
 
   // Avatar học sinh ngẫu nhiên cho lớp học thêm
   const mockAvatars = [
@@ -137,16 +70,17 @@ export default function StudentClassrooms() {
           <h2>Lớp học của tôi</h2>
           <p>Quản lý và theo dõi tiến độ tham gia lớp học của bạn.</p>
         </div>
-        <button className={styles.btnJoinHeader} onClick={handleJoinClick}>
-          <Plus size={18} weight="bold" />
-          <span>Tham gia lớp học</span>
-        </button>
       </div>
 
       {/* 2. CLASSES GRID */}
       <div className={styles.classesGrid}>
         {classrooms.map((cls) => (
-          <div key={cls._id} className={styles.classCard}>
+          <div 
+            key={cls._id} 
+            className={styles.classCard}
+            onClick={() => navigate(`/classrooms/${cls._id}`)}
+            style={{ cursor: "pointer" }}
+          >
             <div className={styles.cardTop}>
               <div className={styles.iconBox}>
                 <span className={styles.iconSigma}>Σ</span>
@@ -192,14 +126,14 @@ export default function StudentClassrooms() {
           </div>
         ))}
 
-        {/* Placeholder join card if not joined any class */}
+        {/* Placeholder if not joined any class */}
         {classrooms.length === 0 && (
-          <div className={styles.placeholderCard} onClick={handleJoinClick}>
-            <div className={styles.plusIconBox}>
-              <Plus size={26} />
+          <div className={styles.emptyStateCard}>
+            <div className={styles.emptyIconBox}>
+              <User size={32} weight="bold" />
             </div>
-            <h4>Thêm lớp học mới</h4>
-            <p>Nhập mã tham gia để bắt đầu hành trình học tập.</p>
+            <h4>Chưa có lớp học</h4>
+            <p>Tài khoản của bạn chưa được phân vào lớp học nào. Vui lòng liên hệ giáo viên để được thêm vào lớp.</p>
           </div>
         )}
       </div>
@@ -213,38 +147,6 @@ export default function StudentClassrooms() {
           </p>
         </div>
       </div>
-
-      {/* POPUP MODAL HỌC SINH THAM GIA LỚP BẰNG CODE */}
-      {showJoinModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowJoinModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <h3>Tham Gia Lớp Học</h3>
-            <form onSubmit={handleJoinClass}>
-              <div className={styles.formGroup}>
-                <label htmlFor="modalClassCode">Mã lớp học thêm</label>
-                <input
-                  id="modalClassCode"
-                  type="text"
-                  required
-                  maxLength={6}
-                  placeholder="Nhập 6 ký tự mã lớp (Ví dụ: TOAN06)"
-                  value={classCodeInput}
-                  onChange={(e) => setClassCodeInput(e.target.value)}
-                  style={{ textTransform: "uppercase" }}
-                />
-              </div>
-              <div className={styles.modalActions}>
-                <button type="button" className={styles.btnCancel} onClick={() => setShowJoinModal(false)}>
-                  Hủy bỏ
-                </button>
-                <button type="submit" className={styles.btnConfirm}>
-                  Tham gia ngay
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
