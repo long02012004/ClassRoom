@@ -18,9 +18,23 @@ import {
   GraduationCap,
   IdentificationBadge
 } from 'phosphor-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 import styles from './StudentProfile.module.scss';
 
 const StudentProfile: React.FC = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const username = user?.name || "Người dùng";
+  const email = user?.email || "Chưa cập nhật email";
+  const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=FE6747&color=fff&bold=true`;
+
   return (
     <div className={styles.profileContainer}>
       {/* Header */}
@@ -28,15 +42,15 @@ const StudentProfile: React.FC = () => {
         <div className={styles.headerLeft}>
           <div className={styles.avatarWrapper}>
             <img 
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" 
-              alt="Alex Johnson" 
+              src={avatar} 
+              alt={username} 
             />
             <button className={styles.editAvatarBtn}>
               <PencilSimple size={16} />
             </button>
           </div>
           <div className={styles.userInfo}>
-            <h1>Alex Johnson</h1>
+            <h1>{username}</h1>
             <div className={styles.infoRow}>
               <div className={styles.infoItem}>
                 <GraduationCap size={16} />
@@ -101,7 +115,7 @@ const StudentProfile: React.FC = () => {
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>Họ và tên</span>
-                  <span className={styles.value}>Alex Johnson</span>
+                  <span className={styles.value}>{username}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>Ngày sinh</span>
@@ -122,8 +136,8 @@ const StudentProfile: React.FC = () => {
               <div className={styles.groupTitle}>Liên lạc & Địa chỉ</div>
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
-                  <span className={styles.label}>Email học sinh</span>
-                  <span className={styles.value}>alex.j@school.edu.vn</span>
+                  <span className={styles.label}>Email tài khoản</span>
+                  <span className={styles.value}>{email}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>Số điện thoại</span>
@@ -275,7 +289,7 @@ const StudentProfile: React.FC = () => {
                 </div>
                 <CaretRight size={16} weight="bold" className={styles.menuArrow} />
               </div>
-              <button className={styles.logoutBtn}>
+              <button className={styles.logoutBtn} onClick={handleLogout}>
                 <SignOut size={18} weight="bold" />
                 Đăng xuất tài khoản
               </button>

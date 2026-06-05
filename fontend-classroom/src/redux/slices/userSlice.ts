@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import type { UserData } from "../../services/userService";
+import type { IModelUser } from "../../types/backend";
 
 export interface UserState {
-  userInfo: UserData | null;
+  userInfo: IModelUser | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -26,7 +26,7 @@ const userSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    loginSuccess: (state, action: PayloadAction<UserData>) => {
+    loginSuccess: (state, action: PayloadAction<IModelUser>) => {
       state.loading = false;
       state.isAuthenticated = true;
       state.userInfo = action.payload;
@@ -46,7 +46,7 @@ const userSlice = createSlice({
       localStorage.removeItem("user");
       localStorage.removeItem("token");
     },
-    updateUserInfo: (state, action: PayloadAction<Partial<UserData>>) => {
+    updateUserInfo: (state, action: PayloadAction<Partial<IModelUser>>) => {
       if (state.userInfo) {
         state.userInfo = { ...state.userInfo, ...action.payload };
         localStorage.setItem("user", JSON.stringify(state.userInfo));

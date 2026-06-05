@@ -10,29 +10,32 @@ import {
   SignOut,
   List,
   X,
-  CalendarBlank
+  CalendarBlank,
+  Gear
 } from "phosphor-react";
+import { useAuth } from "../../../context/AuthContext";
 import styles from "./Navbar.module.scss";
 
 const NavBar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
-  // Đọc trạng thái đăng nhập từ localStorage để hỗ trợ demo
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-  const username = localStorage.getItem("username") || "Thầy Nguyễn Văn A";
-  const userRole = localStorage.getItem("userRole") || "TEACHER";
+  const username = user?.name || "Người dùng";
+  const userRole = user?.role || "teacher";
   const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=FE6747&color=fff&bold=true`;
+
+  const roleDisplay =
+    userRole === "admin" ? "Quản trị viên" :
+    userRole === "teacher" ? "Giáo viên" : "Học sinh";
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogOut = (e: React.MouseEvent) => {
+  const handleLogOut = async (e: React.MouseEvent) => {
     e.preventDefault();
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("username");
-    localStorage.removeItem("userRole");
-    navigate("/register");
+    await logout();
+    navigate("/login");
   };
 
   return (
@@ -51,10 +54,10 @@ const NavBar: React.FC = () => {
           <span className={styles.logoText}>Lớp học</span>
         </Link>
 
-        {isLoggedIn ? (
+        {isAuthenticated ? (
           <img src={avatar} alt="User Avatar" className={styles.mobileAvatar} />
         ) : (
-          <Link to="/register" className={styles.mobileLoginLink}>Đăng nhập</Link>
+          <Link to="/login" className={styles.mobileLoginLink}>Đăng nhập</Link>
         )}
       </header>
 
@@ -77,7 +80,8 @@ const NavBar: React.FC = () => {
             </span>
           </Link>
           <div className={styles.logoSubtitle}>
-            {userRole === "STUDENT" ? "Cổng thông tin học sinh" : "Bảng điều khiển giáo viên"}
+            {userRole === "student" ? "Cổng thông tin học sinh" :
+             userRole === "admin" ? "Bảng quản trị hệ thống" : "Bảng điều khiển giáo viên"}
           </div>
         </div>
 
@@ -92,7 +96,7 @@ const NavBar: React.FC = () => {
             <span>Bảng điều khiển</span>
           </Link>
           
-          {userRole === "STUDENT" ? (
+          {userRole === "student" ? (
             // Menu dành cho học sinh
             <>
               <Link 
@@ -128,7 +132,7 @@ const NavBar: React.FC = () => {
                 <span>Hồ sơ</span>
               </Link>
             </>
-          ) : userRole === "ADMIN" ? (
+          ) : userRole === "admin" ? (
             // Menu dành cho Admin
             <>
               <Link 
@@ -137,7 +141,23 @@ const NavBar: React.FC = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 <User size={20} weight={isActive("/admin/teachers") ? "fill" : "regular"} />
-                <span>Giáo viên</span>
+                <span>Người dùng</span>
+              </Link>
+              <Link 
+                to="/admin/classrooms" 
+                className={`${styles.navItem} ${isActive("/admin/classrooms") ? styles.active : ""}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Chalkboard size={20} weight={isActive("/admin/classrooms") ? "fill" : "regular"} />
+                <span>Lớp học hệ thống</span>
+              </Link>
+              <Link 
+                to="/admin/settings" 
+                className={`${styles.navItem} ${isActive("/admin/settings") ? styles.active : ""}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Gear size={20} weight={isActive("/admin/settings") ? "fill" : "regular"} />
+                <span>Cài đặt</span>
               </Link>
             </>
           ) : (
@@ -191,7 +211,7 @@ const NavBar: React.FC = () => {
 
         {/* Nút Hành Động Ở Góc Sidebar */}
         <div className={styles.actionBtnContainer}>
-          {userRole === "TEACHER" ? (
+          {userRole === "teacher" ? (
             <button 
               className={styles.newClassBtn}
               onClick={() => {
@@ -204,14 +224,12 @@ const NavBar: React.FC = () => {
         </div>
 
         {/* Khối Thông Tin Người Dùng ở đáy Sidebar */}
-        {isLoggedIn && (
+        {isAuthenticated && (
           <div className={styles.userCard}>
             <img src={avatar} alt="User Avatar" className={styles.avatarImg} />
             <div className={styles.userInfo}>
               <span className={styles.userName}>{username}</span>
-              <span className={styles.userRole}>
-                {userRole === "ADMIN" ? "Quản trị viên" : userRole === "TEACHER" ? "Giáo viên" : "Học sinh"}
-              </span>
+              <span className={styles.userRole}>{roleDisplay}</span>
             </div>
             <button 
               onClick={handleLogOut} 

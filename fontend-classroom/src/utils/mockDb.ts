@@ -559,6 +559,26 @@ export const deleteMockStudent = (studentId: string): boolean => {
   return true;
 };
 
+export const updateMockStudent = (
+  studentId: string,
+  name: string,
+  parentPhone: string,
+  email?: string,
+  password?: string
+): Student | null => {
+  const db = getMockDb();
+  const idx = db.students.findIndex(s => s._id === studentId);
+  if (idx === -1) return null;
+
+  db.students[idx].name = name;
+  db.students[idx].parentPhone = parentPhone;
+  if (email !== undefined) db.students[idx].email = email;
+  if (password !== undefined) db.students[idx].password = password;
+
+  saveMockDb(db);
+  return db.students[idx];
+};
+
 // --- CRUD: ATTENDANCE (ĐIỂM DANH) ---
 export const getMockAttendances = (classId: string): Attendance[] => {
   const db = getMockDb();

@@ -10,11 +10,23 @@ import TeacherStudents from "../pages/Teacher/Students/TeacherStudents";
 import StudentResults from "../pages/Student/Results/StudentResults";
 import StudentProfile from "../pages/Student/Profile/StudentProfile";
 import TeacherClassroomDetail from "../pages/Teacher/ClassroomDetail/TeacherClassroomDetail";
+import AdminSettings from "../pages/Admin/Settings/AdminSettings";
+import AdminClassrooms from "../pages/Admin/Classrooms/AdminClassrooms";
 import MainLayout from "../components/Layout/MainLayout.tsx";
 import ProtectedRoute from "../components/Layout/ProtectedRoute.tsx";
 import Gradebook from "../pages/Gradebook";
 import Attendance from "../pages/Attendance";
 import Schedule from "../pages/Schedule";
+import { useAuth } from "../context/AuthContext";
+
+// Redirect về trang phù hợp theo role
+function RoleRedirect() {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'admin') return <Navigate to="/admin/teachers" replace />;
+  if (user.role === 'teacher') return <Navigate to="/classrooms" replace />;
+  return <Navigate to="/dashboard" replace />;
+}
 
 export const router = createBrowserRouter([
   {
@@ -30,55 +42,67 @@ export const router = createBrowserRouter([
         path: "/",
         element: <MainLayout />,
         children: [
-      {
-        path: "dashboard",
-        element: <Dashboard />,
-      },
-      {
-        path: "classrooms",
-        element: <Classrooms />,
-      },
-      {
-        path: "classrooms/:id",
-        element: <TeacherClassroomDetail />,
-      },
-      {
-        path: "assignments",
-        element: <Assignments />,
-      },
-      {
-        path: "assignments/:id",
-        element: <AssignmentDetail />,
-      },
-      {
-        path: "exams/:id",
-        element: <TakeExam />,
-      },
-      {
-        path: "gradebook",
-        element: <Gradebook />,
-      },
-      {
-        path: "profile",
-        element: <StudentProfile />,
-      },
-      {
-        path: "admin/teachers",
-        element: <AdminTeachers />,
-      },
-      {
-        path: "classrooms/:id/students",
-        element: <TeacherStudents />,
-      },
-      {
-        path: "attendance",
-        element: <Attendance />,
-      },
-      {
-        path: "schedule",
-        element: <Schedule />,
-      },
-      // Các trang con khác sẽ thêm ở đây
+          {
+            index: true,
+            element: <RoleRedirect />,
+          },
+          {
+            path: "dashboard",
+            element: <Dashboard />,
+          },
+          {
+            path: "classrooms",
+            element: <Classrooms />,
+          },
+          {
+            path: "classrooms/:id",
+            element: <TeacherClassroomDetail />,
+          },
+          {
+            path: "assignments",
+            element: <Assignments />,
+          },
+          {
+            path: "assignments/:id",
+            element: <AssignmentDetail />,
+          },
+          {
+            path: "exams/:id",
+            element: <TakeExam />,
+          },
+          {
+            path: "gradebook",
+            element: <Gradebook />,
+          },
+          {
+            path: "profile",
+            element: <StudentProfile />,
+          },
+          {
+            path: "admin/teachers",
+            element: <AdminTeachers />,
+          },
+          {
+            path: "admin/classrooms",
+            element: <AdminClassrooms />,
+          },
+          {
+            path: "admin/settings",
+            element: <AdminSettings />,
+          },
+          {
+            path: "classrooms/:id/students",
+            element: <TeacherStudents />,
+          },
+          {
+            path: "attendance",
+            element: <Attendance />,
+          },
+          {
+            path: "schedule",
+            element: <Schedule />,
+          },
+          // Các trang con khác sẽ thêm ở đây
         ],
       },
     ],

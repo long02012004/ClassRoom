@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Envelope, Lock, SignIn } from "phosphor-react";
+import { Envelope, Lock, SignIn, Eye, EyeSlash } from "phosphor-react";
 import { useToast } from "../../../components/Styles/ToastContext.tsx";
 import { useAuth } from "../../../context/AuthContext.tsx";
 import { authService } from "../../../service/auth.service.ts";
@@ -13,6 +13,7 @@ const Login: React.FC = () => {
   const [email, emailSet] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuth();
 
@@ -24,14 +25,23 @@ const Login: React.FC = () => {
       // Gọi API đăng nhập thật
       const response = await authService.login(email, password);
       
-      // Thành công, lấy token và thông tin user từ response.data
-      const { token, user } = response.data;
+      // Thành công, lấy accessToken và thông tin user từ response.data
+      if (!response.data) throw new Error("Phản hồi từ server không hợp lệ!");
+      const { accessToken, user } = response.data;
       
       // Lưu vào Context
-      login(token, user);
+      login(accessToken, user);
       
       toast.success(response.message || "Đăng nhập thành công!", 3000);
-      navigate("/dashboard");
+
+      // Redirect theo role
+      if (user.role === 'admin') {
+        navigate("/admin/teachers");
+      } else if (user.role === 'teacher') {
+        navigate("/classrooms");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       toast.error(err.message || "Đã xảy ra lỗi, vui lòng kiểm tra lại thông tin!");
     } finally {
@@ -76,17 +86,37 @@ const Login: React.FC = () => {
                       <label htmlFor="password">Mật khẩu</label>
                       <a href="#" className={styles.forgotPass}>Quên mật khẩu?</a>
                     </div>
-                    <div className={styles.inputWrapper}>
+                    <div className={styles.inputWrapper} style={{ position: 'relative' }}>
                       <span className={styles.inputIcon}><Lock size={18} /></span>
                       <input
                         id="password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         required
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={loading}
+                        style={{ paddingRight: '40px' }}
                       />
+                      <button 
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: '#64748b',
+                          padding: 0
+                        }}
+                      >
+                        {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+                      </button>
                     </div>
                   </div>
 

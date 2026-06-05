@@ -18,6 +18,7 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
+
 .headerText {
   h2 {
     font-size: 1.5rem;
@@ -25,6 +26,7 @@
     color: vars.$dark-text;
     margin: 0 0 8px 0;
   }
+
   p {
     color: #64748b;
     margin: 0;
@@ -244,4 +246,9 @@
   &:hover {
     background: darken(vars.$primary, 5%);
   }
+}
+
+.add {
+  color: #FE6747 !important;
+  /* Test color */
 }

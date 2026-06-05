@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { loginTeacher, getMe, createTeacherAccount, createStudentAccount } from '../controllers/authController';
+import { loginTeacher, getMe, createTeacherAccount, createStudentAccount, logout, refreshToken } from '../controllers/authController';
 import { validateRegister, validateLogin } from '../middlewares/validateMiddleware';
 import { protect, authorize } from '../middlewares/authMiddleware';
 
@@ -14,7 +14,13 @@ router.post('/create-student', protect, authorize('teacher'), validateRegister, 
 // route login
 router.post('/login', validateLogin, loginTeacher);
 
-// route lấy thông tin cá nhân (yêu cầu token)
+// route lấy thông tin cá nhân (yêu cầu access token)
 router.get('/me', protect, getMe);
 
-export default router;
+// route làm mới access token bằng refresh token cookie (không cần protect)
+router.post('/refresh-token', refreshToken);
+
+// route đăng xuất — xóa cookie refresh_token (yêu cầu access token hợp lệ)
+router.post('/logout', protect, logout);
+
+export default router;

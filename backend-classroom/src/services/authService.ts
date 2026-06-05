@@ -2,7 +2,12 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { UserModel } from '../models/User';
 
-export const createAccountService = async (name: string, email: string, password: string, role: 'admin' | 'teacher' | 'student') => {
+const JWT_SECRET = process.env.JWT_SECRET || 'SieuBaoMat2026';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'SieuBaoMatRefresh2026';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';       // Access token ngắn hạn
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d'; // Refresh token dài hạn
+
+export const createAccountService = async (name: string, email: string, password: string, role: 'admin' | 'teacher' | 'student', parentPhone?: string) => {
     // 1. Logic kiểm tra trùng email
     const userExists = await UserModel.findOne({ email });
     if (userExists) {
@@ -18,15 +23,39 @@ export const createAccountService = async (name: string, email: string, password
         name,
         email,
         passwordHash,
-        role
+        role,
+        parentPhone: parentPhone || ''
     });
 
     return {
         id: newUser._id,
         name: newUser.name,
         email: newUser.email,
-        role: newUser.role
+        role: newUser.role,
+        parentPhone: newUser.parentPhone
     };
+};
+
+// Tạo cặp access token + refresh token
+export const generateTokens = (userId: string, role: string) => {
+    const accessToken = jwt.sign(
+        { id: userId, role },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN as any }
+    );
+
+    const refreshToken = jwt.sign(
+        { id: userId },
+        JWT_REFRESH_SECRET,
+        { expiresIn: JWT_REFRESH_EXPIRES_IN as any }
+    );
+
+    return { accessToken, refreshToken };
+};
+
+// Xác minh refresh token và trả về payload
+export const verifyRefreshToken = (token: string) => {
+    return jwt.verify(token, JWT_REFRESH_SECRET) as { id: string };
 };
 
 export const loginTeacherService = async (email: string, password: string) => {
@@ -42,14 +71,8 @@ export const loginTeacherService = async (email: string, password: string) => {
         throw new Error('Email hoặc mật khẩu không chính xác!');
     }
 
-    // 3. Tạo JWT Token
-    const jwtSecret = process.env.JWT_SECRET || 'SieuBaoMat2026';
-    const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '1d';
-    const token = jwt.sign(
-        { id: user._id, role: user.role },
-        jwtSecret,
-        { expiresIn: jwtExpiresIn as any }
-    );
+    // 3. Tạo cặp JWT Token
+    const { accessToken, refreshToken } = generateTokens(String(user._id), user.role);
 
     return {
         user: {
@@ -58,6 +81,7 @@ export const loginTeacherService = async (email: string, password: string) => {
             email: user.email,
             role: user.role
         },
-        token
+        accessToken,
+        refreshToken
     };
-};
+};

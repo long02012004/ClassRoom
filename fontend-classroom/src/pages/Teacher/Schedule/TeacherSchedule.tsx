@@ -1,228 +1,278 @@
-import React, { useState } from "react";
-import {
-  CalendarBlank,
-  CaretLeft,
-  CaretRight,
-  Clock,
-  MapPin,
-  Users,
-  BookOpen,
-  CheckCircle,
-  Warning,
-  Plus,
-} from "phosphor-react";
+import React, { useState, useMemo } from "react";
+import { ArrowRight, CheckCircle, BookOpen, Clock, Funnel } from "phosphor-react";
 import styles from "./TeacherSchedule.module.scss";
 
-// --- Mock Data ---
-const DAYS = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-const DATE_LABELS = ["02/06", "03/06", "04/06", "05/06", "06/06", "07/06"];
-const TODAY_IDX = 1; // Thứ 3 = index 1
-
+// --- Kiểu Dữ Liệu ---
 interface Lesson {
   id: string;
-  subject: string;
   className: string;
-  room: string;
-  startTime: string;
-  endTime: string;
-  students: number;
-  status: "upcoming" | "ongoing" | "done" | "cancelled";
-  dayIdx: number;
-  period: number; // 1-5
+  subject: string;
+  chapter: string;
+  dayOfWeek: number; // 1: Thứ 2, 2: Thứ 3...
+  startTime: string; // "07:30"
+  endTime: string;   // "09:00"
+  progress: number;
 }
 
-const mockLessons: Lesson[] = [
-  { id: "l1", subject: "Toán học", className: "12A1", room: "P.201", startTime: "07:00", endTime: "08:30", students: 32, status: "done", dayIdx: 0, period: 1 },
-  { id: "l2", subject: "Toán học", className: "12A2", room: "P.202", startTime: "08:45", endTime: "10:15", students: 28, status: "done", dayIdx: 0, period: 2 },
-  { id: "l3", subject: "Toán học", className: "12A1", room: "P.201", startTime: "07:00", endTime: "08:30", students: 32, status: "ongoing", dayIdx: 1, period: 1 },
-  { id: "l4", subject: "Đại số", className: "11B3", room: "P.105", startTime: "10:30", endTime: "12:00", students: 35, status: "upcoming", dayIdx: 1, period: 3 },
-  { id: "l5", subject: "Hình học", className: "10C2", room: "P.301", startTime: "13:30", endTime: "15:00", students: 30, status: "upcoming", dayIdx: 1, period: 4 },
-  { id: "l6", subject: "Toán học", className: "12A2", room: "P.202", startTime: "07:00", endTime: "08:30", students: 28, status: "upcoming", dayIdx: 2, period: 1 },
-  { id: "l7", subject: "Giải tích", className: "12A1", room: "P.201", startTime: "08:45", endTime: "10:15", students: 32, status: "upcoming", dayIdx: 2, period: 2 },
-  { id: "l8", subject: "Đại số", className: "11B3", room: "P.105", startTime: "07:00", endTime: "08:30", students: 35, status: "upcoming", dayIdx: 3, period: 1 },
-  { id: "l9", subject: "Hình học", className: "10C2", room: "P.301", startTime: "13:30", endTime: "15:00", students: 30, status: "cancelled", dayIdx: 3, period: 4 },
-  { id: "l10", subject: "Toán học", className: "12A1", room: "P.201", startTime: "07:00", endTime: "08:30", students: 32, status: "upcoming", dayIdx: 4, period: 1 },
-  { id: "l11", subject: "Toán học", className: "12A2", room: "P.202", startTime: "10:30", endTime: "12:00", students: 28, status: "upcoming", dayIdx: 5, period: 3 },
+// --- Dữ Liệu Mock Nâng Cao ---
+const MOCK_LESSONS: Lesson[] = [
+  { id: "1", className: "12A1", subject: "Toán Giải Tích", chapter: "Chương I: Ứng dụng đạo hàm", dayOfWeek: 2, startTime: "07:30", endTime: "08:30", progress: 100 },
+  { id: "2", className: "12C3", subject: "Toán Hình", chapter: "Chương III: Khối đa diện", dayOfWeek: 2, startTime: "09:00", endTime: "10:30", progress: 65 },
+  { id: "3", className: "11B2", subject: "Đại Số 11", chapter: "Chương II: Tổ hợp - Xác suất", dayOfWeek: 2, startTime: "14:00", endTime: "15:30", progress: 0 },
+  { id: "4", className: "12A1", subject: "Toán Giải Tích", chapter: "Chương I: Ứng dụng đạo hàm", dayOfWeek: 1, startTime: "08:00", endTime: "09:30", progress: 100 },
+  { id: "5", className: "10C2", subject: "Hình Học", chapter: "Chương I: Vectơ", dayOfWeek: 3, startTime: "13:30", endTime: "15:00", progress: 0 },
+  { id: "6", className: "12C3", subject: "Toán Hình", chapter: "Chương III: Khối đa diện", dayOfWeek: 4, startTime: "07:30", endTime: "09:00", progress: 0 },
+  { id: "7", className: "11B2", subject: "Đại Số 11", chapter: "Chương II: Tổ hợp - Xác suất", dayOfWeek: 5, startTime: "15:00", endTime: "16:30", progress: 0 },
 ];
 
-const PERIODS = [
-  { label: "Tiết 1", time: "07:00 - 08:30" },
-  { label: "Tiết 2", time: "08:45 - 10:15" },
-  { label: "Tiết 3", time: "10:30 - 12:00" },
-  { label: "Tiết 4", time: "13:30 - 15:00" },
-  { label: "Tiết 5", time: "15:15 - 16:45" },
-];
+const TIME_SLOTS = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+const START_HOUR = 7;
+const HOUR_HEIGHT = 80; // px per hour
 
-const statusConfig: Record<string, { label: string; cls: string }> = {
-  upcoming: { label: "Sắp diễn ra", cls: "upcoming" },
-  ongoing:  { label: "Đang dạy",   cls: "ongoing"  },
-  done:     { label: "Đã xong",    cls: "done"     },
-  cancelled:{ label: "Đã hủy",    cls: "cancelled" },
+// Hàm parse thời gian "HH:mm" thành số giờ thập phân
+const parseTime = (timeStr: string) => {
+  const [h, m] = timeStr.split(":").map(Number);
+  return h + m / 60;
 };
 
 export default function TeacherSchedule() {
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
-  const [weekOffset, setWeekOffset] = useState(0);
+  const [activeView, setActiveView] = useState("Tuần");
+  const [activeFilter, setActiveFilter] = useState("Tất cả lớp");
 
-  const totalLessons = mockLessons.length;
-  const doneLessons  = mockLessons.filter(l => l.status === "done").length;
-  const ongoingLessons = mockLessons.filter(l => l.status === "ongoing").length;
+  // Giả định hôm nay là Thứ 3 (dayOfWeek = 2) lúc 10:00 để test giao diện
+  const currentDayOfWeek: number = 2;
+  const currentTime: number = 10.0; // 10:00
 
-  const filteredLesson = (dayIdx: number, period: number) =>
-    mockLessons.find(l => l.dayIdx === dayIdx && l.period === period);
+  const DAYS = [
+    { day: "Thứ 2", date: "16", isToday: currentDayOfWeek === 1, value: 1 },
+    { day: "Thứ 3", date: "17", isToday: currentDayOfWeek === 2, value: 2 },
+    { day: "Thứ 4", date: "18", isToday: currentDayOfWeek === 3, value: 3 },
+    { day: "Thứ 5", date: "19", isToday: currentDayOfWeek === 4, value: 4 },
+    { day: "Thứ 6", date: "20", isToday: currentDayOfWeek === 5, value: 5 },
+  ];
 
-  const weekLabel =
-    weekOffset === 0 ? "Tuần này (02/06 - 07/06)"
-    : weekOffset === -1 ? "Tuần trước (26/05 - 31/05)"
-    : "Tuần sau (09/06 - 14/06)";
+  const filters = ["Tất cả lớp", "12A1", "12C3", "11B2", "10C2"];
+
+  // Lọc bài học theo Lớp
+  const filteredLessons = useMemo(() => {
+    if (activeFilter === "Tất cả lớp") return MOCK_LESSONS;
+    return MOCK_LESSONS.filter(l => l.className === activeFilter);
+  }, [activeFilter]);
+
+  // Bài học đang diễn ra (hoặc sắp tới gần nhất trong ngày)
+  const ongoingLesson = useMemo(() => {
+    const todayLessons = MOCK_LESSONS.filter(l => l.dayOfWeek === currentDayOfWeek);
+    // Tìm bài đang diễn ra
+    const current = todayLessons.find(l => {
+      const start = parseTime(l.startTime);
+      const end = parseTime(l.endTime);
+      return currentTime >= start && currentTime <= end;
+    });
+    if (current) return current;
+    // Nếu không có, tìm bài sắp diễn ra tiếp theo
+    const next = todayLessons.sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime))
+      .find(l => parseTime(l.startTime) > currentTime);
+    return next || todayLessons[todayLessons.length - 1]; // Fallback
+  }, [currentTime, currentDayOfWeek]);
+
+  // Danh sách bài học hôm nay cho Timeline
+  const todayClassesList = useMemo(() => {
+    const lessons = MOCK_LESSONS.filter(l => l.dayOfWeek === currentDayOfWeek);
+    return lessons.sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime)).map(l => {
+      const start = parseTime(l.startTime);
+      const end = parseTime(l.endTime);
+      let status = "Sắp tới";
+      let statusColor = "blue";
+
+      if (currentTime > end) {
+        status = "Hoàn thành";
+        statusColor = "green";
+      } else if (currentTime >= start && currentTime <= end) {
+        status = "Đang giảng";
+        statusColor = "red";
+      }
+
+      return {
+        ...l,
+        timeLabel: `${l.startTime} - ${l.endTime}`,
+        title: `${l.className} - ${l.subject}`,
+        status,
+        statusColor
+      };
+    });
+  }, [currentTime, currentDayOfWeek]);
 
   return (
     <div className={styles.container}>
-
-      {/* ── HEADER ── */}
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <div className={styles.headerIcon}>
-            <CalendarBlank size={26} weight="fill" />
-          </div>
+      {/* CỘT CHÍNH (MAIN SCHEDULE) */}
+      <div className={styles.mainContent}>
+        {/* Tiêu đề & Toggle View */}
+        <div className={styles.headerRow}>
           <div>
-            <h1 className={styles.title}>Quản lý Lịch dạy</h1>
-            <p className={styles.subtitle}>Theo dõi thời khóa biểu và lịch giảng dạy hàng tuần</p>
+            <h1 className={styles.pageTitle}>Lịch Giảng Dạy Tuần Này</h1>
+            <p className={styles.pageSubtitle}>Tháng 10, 2023 • Tuần 42</p>
           </div>
-        </div>
-        <button className={styles.btnAdd}>
-          <Plus size={18} weight="bold" />
-          Thêm tiết dạy
-        </button>
-      </div>
-
-      {/* ── STATS ROW ── */}
-      <div className={styles.statsRow}>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon} data-color="blue">
-            <BookOpen size={22} weight="fill" />
-          </div>
-          <div>
-            <div className={styles.statNum}>{totalLessons}</div>
-            <div className={styles.statLabel}>Tổng tiết tuần này</div>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon} data-color="green">
-            <CheckCircle size={22} weight="fill" />
-          </div>
-          <div>
-            <div className={styles.statNum}>{doneLessons}</div>
-            <div className={styles.statLabel}>Đã hoàn thành</div>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon} data-color="orange">
-            <Clock size={22} weight="fill" />
-          </div>
-          <div>
-            <div className={styles.statNum}>{ongoingLessons}</div>
-            <div className={styles.statLabel}>Đang diễn ra</div>
-          </div>
-        </div>
-        <div className={styles.statCard}>
-          <div className={styles.statIcon} data-color="purple">
-            <Users size={22} weight="fill" />
-          </div>
-          <div>
-            <div className={styles.statNum}>3</div>
-            <div className={styles.statLabel}>Lớp đang phụ trách</div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── WEEK NAVIGATION ── */}
-      <div className={styles.weekNav}>
-        <button className={styles.weekNavBtn} onClick={() => setWeekOffset(w => w - 1)}>
-          <CaretLeft size={18} weight="bold" />
-        </button>
-        <div className={styles.weekLabel}>
-          <CalendarBlank size={18} weight="fill" />
-          {weekLabel}
-        </div>
-        <button className={styles.weekNavBtn} onClick={() => setWeekOffset(w => w + 1)}>
-          <CaretRight size={18} weight="bold" />
-        </button>
-      </div>
-
-      {/* ── TIMETABLE GRID ── */}
-      <div className={styles.timetableWrapper}>
-        <table className={styles.timetable}>
-          <thead>
-            <tr>
-              <th className={styles.periodCol}>Tiết / Giờ</th>
-              {DAYS.map((day, i) => (
-                <th
-                  key={i}
-                  className={`${styles.dayCol} ${i === TODAY_IDX ? styles.todayCol : ""}`}
-                  onClick={() => setSelectedDay(i === selectedDay ? null : i)}
-                >
-                  <div className={styles.dayLabel}>{day}</div>
-                  <div className={`${styles.dateLabel} ${i === TODAY_IDX ? styles.todayBadge : ""}`}>
-                    {DATE_LABELS[i]}
-                    {i === TODAY_IDX && <span className={styles.todayDot} />}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {PERIODS.map((period, pIdx) => (
-              <tr key={pIdx}>
-                <td className={styles.periodCell}>
-                  <div className={styles.periodLabel}>{period.label}</div>
-                  <div className={styles.periodTime}>{period.time}</div>
-                </td>
-                {DAYS.map((_, dIdx) => {
-                  const lesson = filteredLesson(dIdx, pIdx + 1);
-                  const isToday = dIdx === TODAY_IDX;
-                  const isSelected = dIdx === selectedDay;
-                  return (
-                    <td
-                      key={dIdx}
-                      className={`${styles.cell} ${isToday ? styles.todayCell : ""} ${isSelected ? styles.selectedCell : ""}`}
-                    >
-                      {lesson ? (
-                        <div className={`${styles.lessonCard} ${styles[lesson.status]}`}>
-                          <div className={styles.lessonSubject}>{lesson.subject}</div>
-                          <div className={styles.lessonClass}>
-                            <Users size={12} /> {lesson.className}
-                          </div>
-                          <div className={styles.lessonRoom}>
-                            <MapPin size={12} /> {lesson.room}
-                          </div>
-                          <div className={`${styles.lessonBadge} ${styles[`badge_${lesson.status}`]}`}>
-                            {statusConfig[lesson.status].label}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className={styles.emptyCell} />
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
+          <div className={styles.viewToggle}>
+            {["Ngày", "Tuần", "Tháng"].map((view) => (
+              <button
+                key={view}
+                className={`${styles.viewBtn} ${activeView === view ? styles.activeView : ""}`}
+                onClick={() => setActiveView(view)}
+              >
+                {view}
+              </button>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </div>
+
+        {/* Lưới Lịch */}
+        <div className={styles.calendarCard}>
+          <div className={styles.calendarHeader}>
+            <div className={styles.timeColumnHeader}>Giờ</div>
+            {DAYS.map((d, i) => (
+              <div
+                key={i}
+                className={`${styles.dayColumnHeader} ${d.isToday ? styles.todayHeader : ""}`}
+              >
+                <span className={styles.dayText}>{d.day}</span>
+                <span className={styles.dateText}>{d.date}</span>
+              </div>
+            ))}
+          </div>
+          
+          <div className={styles.calendarBody}>
+            {/* Cột thời gian (Trục Y) */}
+            <div className={styles.timeLabelsColumn}>
+              {TIME_SLOTS.map((time, idx) => (
+                <div key={idx} className={styles.timeLabel} style={{ height: HOUR_HEIGHT }}>
+                  {time}
+                </div>
+              ))}
+            </div>
+
+            {/* Các cột Ngày */}
+            <div className={styles.daysColumnsGrid}>
+              {/* Vẽ đường kẻ ngang mờ */}
+              <div className={styles.gridLinesAbsolute}>
+                {TIME_SLOTS.map((_, idx) => (
+                  <div key={idx} className={styles.gridLine} style={{ top: idx * HOUR_HEIGHT }}></div>
+                ))}
+              </div>
+
+              {DAYS.map((day, dayIdx) => (
+                <div key={dayIdx} className={`${styles.dayColumn} ${day.isToday ? styles.todayColBg : ""}`}>
+                  {filteredLessons
+                    .filter(l => l.dayOfWeek === day.value)
+                    .map(lesson => {
+                      const start = parseTime(lesson.startTime);
+                      const end = parseTime(lesson.endTime);
+                      const top = (start - START_HOUR) * HOUR_HEIGHT;
+                      const height = (end - start) * HOUR_HEIGHT;
+                      const isOngoing = lesson.id === ongoingLesson?.id;
+
+                      return (
+                        <div
+                          key={lesson.id}
+                          className={`${styles.lessonCardAbsolute} ${isOngoing ? styles.lessonOngoing : ""}`}
+                          style={{ top, height }}
+                        >
+                          <div className={styles.lessonTime}>{lesson.startTime} - {lesson.endTime}</div>
+                          <div className={styles.lessonTitle}>{lesson.className} - {lesson.subject}</div>
+                          <div className={styles.lessonRoom}>P. Học Chính</div>
+                        </div>
+                      );
+                    })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ── LEGEND ── */}
-      <div className={styles.legend}>
-        {Object.entries(statusConfig).map(([key, val]) => (
-          <div key={key} className={styles.legendItem}>
-            <span className={`${styles.legendDot} ${styles[`dot_${key}`]}`} />
-            {val.label}
+      {/* THANH CÔNG CỤ (RIGHT SIDEBAR) */}
+      <div className={styles.rightSidebar}>
+        {/* Khối Đang diễn ra */}
+        {ongoingLesson ? (
+          <div className={styles.ongoingCard}>
+            <div className={styles.ongoingHeader}>
+              <span className={styles.ongoingBadge}>ĐANG DIỄN RA</span>
+              <span className={styles.ongoingTime}>{ongoingLesson.startTime} - {ongoingLesson.endTime}</span>
+            </div>
+            <h3 className={styles.ongoingClass}>Lớp {ongoingLesson.className} - {ongoingLesson.subject}</h3>
+            <p className={styles.ongoingChapter}>{ongoingLesson.chapter}</p>
+            
+            <div className={styles.progressSection}>
+              <div className={styles.progressLabels}>
+                <span>Tiến độ bài giảng</span>
+                <span>{ongoingLesson.progress}%</span>
+              </div>
+              <div className={styles.progressBarBg}>
+                <div className={styles.progressBarFill} style={{ width: `${ongoingLesson.progress}%` }}></div>
+              </div>
+            </div>
+
+            <div className={styles.ongoingActions}>
+              <button className={styles.actionBtn}>
+                <CheckCircle size={18} weight="regular" />
+                Điểm danh
+              </button>
+              <button className={styles.actionBtn}>
+                <BookOpen size={18} weight="regular" />
+                Tài liệu
+              </button>
+            </div>
           </div>
-        ))}
-        <div className={styles.legendItem}>
-          <Warning size={14} color="#f59e0b" weight="fill" />
-          <span style={{ marginLeft: 4 }}>Tiết bị hủy do lý do đặc biệt</span>
+        ) : (
+          <div className={styles.ongoingCard}>
+            <p>Không có tiết học nào đang diễn ra.</p>
+          </div>
+        )}
+
+        {/* Khối Tiết học hôm nay */}
+        <div className={styles.todayScheduleCard}>
+          <div className={styles.cardHeader}>
+            <h4>Tiết học hôm nay</h4>
+            <span className={styles.countBadge}>{todayClassesList.length} Tiết</span>
+          </div>
+          <div className={styles.timeline}>
+            {todayClassesList.length > 0 ? todayClassesList.map((item, idx) => (
+              <div key={idx} className={styles.timelineItem}>
+                <div className={`${styles.timelineDot} ${styles[`dot_${item.statusColor}`]}`}></div>
+                <div className={styles.timelineContent}>
+                  <div className={styles.timeText}>{item.timeLabel}</div>
+                  <div className={styles.classTitle}>{item.title}</div>
+                  <span className={`${styles.statusBadge} ${styles[`badge_${item.statusColor}`]}`}>
+                    {item.status}
+                  </span>
+                </div>
+              </div>
+            )) : (
+              <p className={styles.noDataText}>Không có tiết học nào hôm nay.</p>
+            )}
+          </div>
+          {todayClassesList.length > 0 && (
+            <button className={styles.viewMoreBtn}>
+              Xem chi tiết ngày <ArrowRight size={16} />
+            </button>
+          )}
+        </div>
+
+        {/* Khối Bộ lọc nhanh */}
+        <div className={styles.filterCard}>
+          <div className={styles.cardHeader}>
+            <h4>Bộ lọc nhanh</h4>
+          </div>
+          <div className={styles.filterChips}>
+            {filters.map((filter) => (
+              <button
+                key={filter}
+                className={`${styles.filterChip} ${activeFilter === filter ? styles.activeChip : ""}`}
+                onClick={() => setActiveFilter(filter)}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
