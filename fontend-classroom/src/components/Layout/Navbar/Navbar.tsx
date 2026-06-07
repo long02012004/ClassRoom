@@ -136,11 +136,11 @@ const NavBar: React.FC = () => {
             // Menu dành cho Admin
             <>
               <Link 
-                to="/admin/teachers" 
-                className={`${styles.navItem} ${isActive("/admin/teachers") ? styles.active : ""}`}
+                to="/admin/users" 
+                className={`${styles.navItem} ${isActive("/admin/users") ? styles.active : ""}`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                <User size={20} weight={isActive("/admin/teachers") ? "fill" : "regular"} />
+                <User size={20} weight={isActive("/admin/users") ? "fill" : "regular"} />
                 <span>Người dùng</span>
               </Link>
               <Link 

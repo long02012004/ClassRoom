@@ -32,6 +32,7 @@ export const createAccountService = async (name: string, email: string, password
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
+        status: newUser.status,
         parentPhone: newUser.parentPhone
     };
 };
@@ -58,11 +59,16 @@ export const verifyRefreshToken = (token: string) => {
     return jwt.verify(token, JWT_REFRESH_SECRET) as { id: string };
 };
 
-export const loginTeacherService = async (email: string, password: string) => {
+export const loginService = async (email: string, password: string) => {
     // 1. Kiểm tra email có tồn tại không
     const user = await UserModel.findOne({ email });
     if (!user) {
         throw new Error('Email hoặc mật khẩu không chính xác!');
+    }
+
+    // Kiểm tra xem tài khoản có bị khóa không
+    if (user.status === 'Locked') {
+        throw new Error('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin!');
     }
 
     // 2. Kiểm tra mật khẩu có khớp không
@@ -79,7 +85,13 @@ export const loginTeacherService = async (email: string, password: string) => {
             id: user._id,
             name: user.name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            status: user.status,
+            avatar: user.avatar,
+            dob: user.dob,
+            gender: user.gender,
+            phone: user.phone,
+            address: user.address
         },
         accessToken,
         refreshToken

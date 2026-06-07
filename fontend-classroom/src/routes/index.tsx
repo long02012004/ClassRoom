@@ -5,7 +5,7 @@ import Classrooms from "../pages/Classrooms";
 import Assignments from "../pages/Assignments";
 import AssignmentDetail from "../pages/Student/Assignments/AssignmentDetail";
 import TakeExam from "../pages/Student/Exams/TakeExam";
-import AdminTeachers from "../pages/Admin/Teachers/AdminTeachers";
+import AdminUsers from "../pages/Admin/Users/AdminUsers";
 import TeacherStudents from "../pages/Teacher/Students/TeacherStudents";
 import StudentResults from "../pages/Student/Results/StudentResults";
 import StudentProfile from "../pages/Student/Profile/StudentProfile";
@@ -23,7 +23,7 @@ import { useAuth } from "../context/AuthContext";
 function RoleRedirect() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'admin') return <Navigate to="/admin/teachers" replace />;
+  if (user.role === 'admin') return <Navigate to="/admin/users" replace />;
   if (user.role === 'teacher') return <Navigate to="/classrooms" replace />;
   return <Navigate to="/dashboard" replace />;
 }
@@ -79,8 +79,8 @@ export const router = createBrowserRouter([
             element: <StudentProfile />,
           },
           {
-            path: "admin/teachers",
-            element: <AdminTeachers />,
+            path: "admin/users",
+            element: <AdminUsers />,
           },
           {
             path: "admin/classrooms",

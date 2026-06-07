@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { loginTeacher, getMe, createTeacherAccount, createStudentAccount, logout, refreshToken } from '../controllers/authController';
+import { login, getMe, createTeacherAccount, createStudentAccount, logout, refreshToken } from '../controllers/authController';
 import { validateRegister, validateLogin } from '../middlewares/validateMiddleware';
 import { protect, authorize } from '../middlewares/authMiddleware';
 
@@ -12,7 +12,7 @@ router.post('/create-teacher', protect, authorize('admin'), validateRegister, cr
 router.post('/create-student', protect, authorize('teacher'), validateRegister, createStudentAccount);
 
 // route login
-router.post('/login', validateLogin, loginTeacher);
+router.post('/login', validateLogin, login);
 
 // route lấy thông tin cá nhân (yêu cầu access token)
 router.get('/me', protect, getMe);

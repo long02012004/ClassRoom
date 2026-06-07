@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { 
-  BookOpen, 
-  Users, 
-  CheckSquare, 
+import {
+  BookOpen,
+  Users,
+  CheckSquare,
   Clipboard,
-  PaperPlaneTilt,
-  ChatCircleText,
-  Plus
+
 } from "phosphor-react";
-import { getMockClassrooms, createMockClassroom, getMockDb } from "../../../utils/mockDb";
+import { createMockClassroom, } from "../../../utils/mockDb";
 import type { Classroom } from "../../../utils/mockDb";
 import { useToast } from "../../../components/Styles/ToastContext";
+import { dashboardService } from "../../../service/dashboard.service";
+import type { ITeacherDashboardStats } from "../../../service/dashboard.service";
+
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -40,24 +50,52 @@ interface ScoreStats {
   trungBinh: number;
 }
 
+const trendData = [
+  { month: "Tháng 8", currentYear: 82, lastYear: 80 },
+  { month: "Tháng 9", currentYear: 86, lastYear: 82 },
+  { month: "Tháng 10", currentYear: 90, lastYear: 85 },
+  { month: "Tháng 11", currentYear: 88, lastYear: 86 },
+  { month: "Tháng 12", currentYear: 94, lastYear: 90 },
+  { month: "Tháng 1", currentYear: 96, lastYear: 92 },
+];
+
 export default function TeacherDashboard() {
   const toast = useToast();
-  
+
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [totalStudents, setTotalStudents] = useState<number>(320);
   const [showModal, setShowModal] = useState(false);
   const [newClass, setNewClass] = useState({ className: "", subject: "" });
-  
+
   const [selectedClassFilter, setSelectedClassFilter] = useState("all");
   const [scoreStats, setScoreStats] = useState<ScoreStats>({ gioi: 142, kha: 110, trungBinh: 68 });
 
-  const loadData = () => {
-    const list = getMockClassrooms();
-    setClassrooms(list);
-    
-    const db = getMockDb();
-    if (db.students && db.students.length > 0) {
-      setTotalStudents(db.students.length + 316); 
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<ITeacherDashboardStats["stats"] | null>(null);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const res = await dashboardService.getTeacherDashboardStats();
+      if (res.data) {
+        setStats(res.data.stats);
+        setScoreStats(res.data.scoreDistribution);
+        // Map classes to the Classroom mock structure for dropdown
+        const mappedClasses = res.data.classes.map(c => ({
+          _id: c._id,
+          className: c.className,
+          subject: c.subject || 'Môn học',
+          classCode: '',
+          teacherId: '',
+          createdAt: ''
+        }));
+        setClassrooms(mappedClasses);
+        setTotalStudents(res.data.stats.totalStudents);
+      }
+    } catch (error: any) {
+      toast.error("Không thể tải dữ liệu thống kê!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,13 +110,11 @@ export default function TeacherDashboard() {
     };
   }, []);
 
+  // Optional: filtering logic can be implemented if the backend supports passing classId
+  // For now, it shows overall stats since we don't have a specific class filter endpoint yet.
   useEffect(() => {
-    if (selectedClassFilter === "all") {
-      setScoreStats({ gioi: 142, kha: 110, trungBinh: 68 });
-    } else if (selectedClassFilter === "class-6") {
-      setScoreStats({ gioi: 85, kha: 60, trungBinh: 42 });
-    } else {
-      setScoreStats({ gioi: 57, kha: 50, trungBinh: 26 });
+    if (selectedClassFilter !== "all") {
+      // Could fetch stats for a specific class here
     }
   }, [selectedClassFilter]);
 
@@ -105,7 +141,7 @@ export default function TeacherDashboard() {
 
   return (
     <div className="flex flex-col gap-6 p-2">
-      
+
       {/* 1. KHỐI THẺ THỐNG KÊ (TEACHER STATS) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -115,7 +151,7 @@ export default function TeacherDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Tổng số lớp</p>
-              <h3 className="text-2xl font-bold">{classrooms.length}</h3>
+              <h3 className="text-2xl font-bold">{isLoading ? "..." : stats?.totalClasses || 0}</h3>
             </div>
           </CardContent>
         </Card>
@@ -127,7 +163,7 @@ export default function TeacherDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Học sinh</p>
-              <h3 className="text-2xl font-bold">{totalStudents}</h3>
+              <h3 className="text-2xl font-bold">{isLoading ? "..." : stats?.totalStudents || 0}</h3>
             </div>
           </CardContent>
         </Card>
@@ -139,7 +175,7 @@ export default function TeacherDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Chuyên cần</p>
-              <h3 className="text-2xl font-bold">96%</h3>
+              <h3 className="text-2xl font-bold">{isLoading ? "..." : `${stats?.attendanceRate || 0}%`}</h3>
             </div>
           </CardContent>
         </Card>
@@ -151,7 +187,7 @@ export default function TeacherDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Bài tập cần chấm</p>
-              <h3 className="text-2xl font-bold">15</h3>
+              <h3 className="text-2xl font-bold">{isLoading ? "..." : stats?.pendingGrades || 0}</h3>
             </div>
           </CardContent>
         </Card>
@@ -159,7 +195,7 @@ export default function TeacherDashboard() {
 
       {/* 2. KHỐI PHÂN TÍCH VÀ FEED HOẠT ĐỘNG (TEACHER GRID) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Biểu đồ phổ điểm */}
         <Card className="lg:col-span-2 flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -270,57 +306,49 @@ export default function TeacherDashboard() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className={styles.trendChartContainer}>
-            <svg className={styles.chartSvg} preserveAspectRatio="none" viewBox="0 0 1000 150">
+        <CardContent className="h-[300px] w-full mt-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
-                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorLast" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#cbd5e1" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#cbd5e1" stopOpacity={0} />
                 </linearGradient>
               </defs>
-
-              <line x1="0" y1="30" x2="1000" y2="30" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="0" y1="75" x2="1000" y2="75" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="0" y1="120" x2="1000" y2="120" stroke="#f1f5f9" strokeWidth="1" />
-
-              <path 
-                d="M 50 130 Q 230 132 410 115 T 770 120 T 950 100" 
-                fill="none" 
-                stroke="#cbd5e1" 
-                strokeWidth="2.5" 
-                strokeDasharray="6,4" 
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickFormatter={(val) => `${val}%`} />
+              <Tooltip
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                labelStyle={{ fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}
+                formatter={(value: number) => [`${value}%`, '']}
               />
-
-              <path 
-                d="M 50 120 C 180 125, 300 85, 450 100 C 600 115, 750 35, 950 50" 
-                fill="url(#areaGradient)" 
+              <Area
+                type="monotone"
+                name="Năm ngoái"
+                dataKey="lastYear"
+                stroke="#cbd5e1"
+                strokeDasharray="5 5"
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill="url(#colorLast)"
               />
-              <path 
-                d="M 50 120 C 180 125, 300 85, 450 100 C 600 115, 750 35, 950 50" 
-                fill="none" 
-                stroke="#10B981" 
-                strokeWidth="3.5" 
-                strokeLinecap="round"
+              <Area
+                type="monotone"
+                name="Hiện tại"
+                dataKey="currentYear"
+                stroke="#10B981"
+                strokeWidth={3.5}
+                fillOpacity={1}
+                fill="url(#colorCurrent)"
+                activeDot={{ r: 6, strokeWidth: 0, fill: '#10B981' }}
               />
-
-              <circle cx="50" cy="120" r="5" fill="#10B981" stroke="white" strokeWidth="2" />
-              <circle cx="230" cy="112" r="5" fill="#10B981" stroke="white" strokeWidth="2" />
-              <circle cx="410" cy="98" r="5" fill="#10B981" stroke="white" strokeWidth="2" />
-              <circle cx="590" cy="110" r="5" fill="#10B981" stroke="white" strokeWidth="2" />
-              <circle cx="770" cy="45" r="5" fill="#10B981" stroke="white" strokeWidth="2" />
-              <circle cx="950" cy="50" r="5" fill="#10B981" stroke="white" strokeWidth="2" />
-            </svg>
-
-            <div className={styles.xAxis}>
-              <span>Tháng 8</span>
-              <span>Tháng 9</span>
-              <span>Tháng 10</span>
-              <span>Tháng 11</span>
-              <span>Tháng 12</span>
-              <span>Tháng 1</span>
-            </div>
-          </div>
+            </AreaChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
 

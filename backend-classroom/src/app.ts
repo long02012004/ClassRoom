@@ -1,12 +1,12 @@
 import express, { Request, Response, Application } from 'express';
 import dotenv from 'dotenv';
+dotenv.config();
+
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { connectDB } from './config/database';
 import apiRouter from './routes'; // Nạp router tổng từ thư mục routes
 import { errorHandler } from './middlewares/errorMiddleware';
-
-dotenv.config();
 
 const app: Application = express();
 

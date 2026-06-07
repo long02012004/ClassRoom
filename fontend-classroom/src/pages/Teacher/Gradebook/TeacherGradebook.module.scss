@@ -32,6 +32,56 @@
         font-size: 14px;
         color: #64748b;
       }
+
+      .classSelectorArea {
+        .dropdownTriggerBtn {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 14px;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          color: #0f172a;
+          background: white;
+          outline: none;
+          min-width: 200px;
+          font-family: inherit;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+          }
+
+          &:focus, &[data-state="open"] {
+            border-color: #ff5e3a;
+            box-shadow: 0 0 0 3px rgba(255, 94, 58, 0.1);
+          }
+
+          svg {
+            color: #64748b;
+            margin-left: 8px;
+            transition: transform 0.2s;
+          }
+
+          &[data-state="open"] svg {
+            transform: rotate(180deg);
+          }
+        }
+
+        .selectSkeleton {
+          width: 200px;
+          height: 38px;
+          background: #f1f5f9;
+          border-radius: 8px;
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+      }
     }
 
     .headerActions {
@@ -72,6 +122,35 @@
 
   .tableWrapper {
     overflow-x: auto;
+    position: relative;
+    min-height: 200px;
+
+    .loadingWrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      gap: 12px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .emptyState {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+      gap: 12px;
+
+      p {
+        margin: 0;
+        font-weight: 600;
+        color: #64748b;
+      }
+    }
     
     .scoresTable {
       width: 100%;
@@ -521,4 +600,18 @@
       }
     }
   }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }

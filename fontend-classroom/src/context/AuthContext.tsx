@@ -6,6 +6,11 @@ interface User {
   name: string;
   email: string;
   role: 'admin' | 'teacher' | 'student';
+  avatar?: string;
+  dob?: string;
+  gender?: string;
+  phone?: string;
+  address?: string;
 }
 
 interface AuthContextType {

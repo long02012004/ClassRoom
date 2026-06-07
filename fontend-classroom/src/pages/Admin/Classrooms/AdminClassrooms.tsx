@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   flexRender,
@@ -57,51 +57,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "../../../components/Styles/ToastContext";
 
-// Define the Classroom type
-export type Classroom = {
-  id: string;
-  name: string;
-  teacher: { id: string; name: string; avatar: string };
-  students: string;
-  createdAt: string;
-  status: "Đang hoạt động" | "Đã lưu trữ" | "Vi phạm";
-};
-
-// Mock Data
-const data: Classroom[] = [
-  {
-    id: "IT-WEB-402",
-    name: "Lập trình React nâng cao",
-    teacher: { id: "GV001", name: "Trần Văn A", avatar: "https://i.pravatar.cc/150?img=11" },
-    students: "42/45",
-    createdAt: "12/03/2024",
-    status: "Đang hoạt động",
-  },
-  {
-    id: "ENG-COM-102",
-    name: "Tiếng Anh Giao Tiếp 2",
-    teacher: { id: "GV002", name: "Nguyễn Thị B", avatar: "https://i.pravatar.cc/150?img=5" },
-    students: "35/40",
-    createdAt: "05/03/2024",
-    status: "Đã lưu trữ",
-  },
-  {
-    id: "IT-DB-205",
-    name: "Cơ sở dữ liệu SQL Server",
-    teacher: { id: "GV003", name: "Phạm Minh C", avatar: "https://i.pravatar.cc/150?img=12" },
-    students: "28/30",
-    createdAt: "10/01/2024",
-    status: "Đang hoạt động",
-  },
-  {
-    id: "CHE-11A1",
-    name: "Lớp Hóa 11A1",
-    teacher: { id: "GV004", name: "Lê Văn D", avatar: "https://i.pravatar.cc/150?img=3" },
-    students: "35/40",
-    createdAt: "15/04/2024",
-    status: "Vi phạm",
-  },
-];
+import { classroomService, type IClassroomItem } from "../../../service/classroom.service";
 
 export default function AdminClassrooms() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -109,18 +65,48 @@ export default function AdminClassrooms() {
   const [globalFilter, setGlobalFilter] = useState("");
   const toast = useToast();
   
-  const [selectedClass, setSelectedClass] = useState<Classroom | null>(null);
+  const [classes, setClasses] = useState<IClassroomItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedClass, setSelectedClass] = useState<IClassroomItem | null>(null);
 
-  const handleDeleteClass = (name: string) => {
-    toast.success(`Đã xóa lớp học ${name} khỏi hệ thống!`, 3000);
+  const fetchClasses = async () => {
+    try {
+      setIsLoading(true);
+      const res = await classroomService.getAdminClassrooms();
+      if (res.data) setClasses(res.data);
+    } catch (error: any) {
+      toast.error("Không thể tải danh sách lớp học", 3000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleLockClass = (name: string) => {
-    toast.success(`Đã khóa lớp học ${name}!`, 3000);
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const handleDeleteClass = async (id: string, name: string) => {
+    try {
+      await classroomService.deleteClassroom(id);
+      toast.success(`Đã xóa lớp học ${name} khỏi hệ thống!`, 3000);
+      fetchClasses();
+    } catch (error: any) {
+      toast.error("Lỗi khi xóa: " + error.message, 3000);
+    }
+  };
+
+  const handleLockClass = async (id: string, name: string, isLocked: boolean) => {
+    try {
+      await classroomService.updateClassroomStatus(id, isLocked ? 'Active' : 'Locked');
+      toast.success(`Đã ${isLocked ? 'mở khóa' : 'khóa'} lớp học ${name}!`, 3000);
+      fetchClasses();
+    } catch (error: any) {
+      toast.error("Lỗi khi cập nhật: " + error.message, 3000);
+    }
   };
 
   // Column Definitions
-  const columns: ColumnDefType<Classroom>[] = [
+  const columns: ColumnDefType<IClassroomItem>[] = [
     {
       accessorKey: "name",
       header: "Tên lớp học & Mã lớp",
@@ -129,8 +115,7 @@ export default function AdminClassrooms() {
         // Determine icon color based on status for visual flair
         let iconBg = "bg-blue-100";
         let iconColor = "text-blue-600";
-        if (cls.status === "Đã lưu trữ") { iconBg = "bg-slate-100"; iconColor = "text-slate-600"; }
-        if (cls.status === "Vi phạm") { iconBg = "bg-red-100"; iconColor = "text-red-600"; }
+        if (cls.status === "Locked") { iconBg = "bg-red-100"; iconColor = "text-red-600"; }
         
         return (
           <div className="flex items-center gap-3">
@@ -173,19 +158,19 @@ export default function AdminClassrooms() {
     {
       accessorKey: "students",
       header: "Sĩ số",
-      cell: ({ row }) => <span className="font-semibold text-slate-700">{row.original.students} HS</span>,
+      cell: ({ row }) => <span className="font-semibold text-slate-700">{row.original.studentCount} HS</span>,
     },
     {
       accessorKey: "createdAt",
       header: "Ngày tạo",
-      cell: ({ row }) => <span className="text-slate-600 font-medium text-sm">{row.original.createdAt}</span>,
+      cell: ({ row }) => <span className="text-slate-600 font-medium text-sm">{new Date(row.original.createdAt).toLocaleDateString("vi-VN")}</span>,
     },
     {
       accessorKey: "status",
       header: "Trạng thái",
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
-        if (status === "Đang hoạt động") {
+        if (status === "Active") {
           return (
             <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-200 gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -193,18 +178,10 @@ export default function AdminClassrooms() {
             </Badge>
           );
         }
-        if (status === "Vi phạm") {
-          return (
-            <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200 gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-              Vi phạm
-            </Badge>
-          );
-        }
         return (
-          <Badge variant="outline" className="bg-slate-100 text-slate-600 border-slate-200 gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-            Đã lưu trữ
+          <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200 gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            Đã khóa
           </Badge>
         );
       },
@@ -217,7 +194,7 @@ export default function AdminClassrooms() {
       header: () => <div className="text-right w-full">Can thiệp</div>,
       cell: ({ row }) => {
         const cls = row.original;
-        const isViolation = cls.status === "Vi phạm";
+        const isViolation = cls.status === "Locked";
         
         return (
           <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
@@ -227,21 +204,24 @@ export default function AdminClassrooms() {
                   variant="outline" 
                   size="icon" 
                   className={`h-8 w-8 transition-colors ${isViolation ? 'border-orange-200 text-orange-600 hover:bg-orange-50 hover:text-orange-700' : 'text-slate-500 hover:text-slate-800'}`}
-                  title="Khóa lớp học"
+                  title={isViolation ? "Mở khóa lớp học" : "Khóa lớp học"}
                 >
                   <LockKey size={16} weight="bold" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Khóa lớp học này?</AlertDialogTitle>
+                  <AlertDialogTitle>{isViolation ? "Mở khóa lớp học này?" : "Khóa lớp học này?"}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Lớp <strong>{cls.name}</strong> sẽ bị tạm ngưng và giáo viên/học sinh không thể truy cập vào bài tập được nữa.
+                    {isViolation 
+                      ? <>Lớp <strong>{cls.name}</strong> sẽ được mở lại bình thường.</>
+                      : <>Lớp <strong>{cls.name}</strong> sẽ bị tạm ngưng và giáo viên/học sinh không thể truy cập vào bài tập được nữa.</>
+                    }
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Hủy</AlertDialogCancel>
-                  <AlertDialogAction className="bg-orange-600 hover:bg-orange-700" onClick={() => handleLockClass(cls.name)}>Khóa lớp</AlertDialogAction>
+                  <AlertDialogAction className="bg-orange-600 hover:bg-orange-700" onClick={() => handleLockClass(cls._id, cls.name, isViolation)}>Đồng ý</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -269,7 +249,7 @@ export default function AdminClassrooms() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel className="font-semibold">Hủy bỏ</AlertDialogCancel>
-                  <AlertDialogAction className="bg-red-600 text-white hover:bg-red-700 font-bold" onClick={() => handleDeleteClass(cls.name)}>
+                  <AlertDialogAction className="bg-red-600 text-white hover:bg-red-700 font-bold" onClick={() => handleDeleteClass(cls._id, cls.name)}>
                     Đồng ý Xóa
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -282,7 +262,7 @@ export default function AdminClassrooms() {
   ];
 
   const table = useReactTable({
-    data,
+    data: classes,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -353,7 +333,7 @@ export default function AdminClassrooms() {
               <div className="absolute top-4 right-4 text-red-600 text-xs font-bold">
                 75
               </div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Lớp vi phạm/lưu trữ</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Lớp bị khóa</p>
               <h3 className="text-3xl font-extrabold text-slate-900">6.1%</h3>
             </CardContent>
           </Card>
@@ -393,9 +373,8 @@ export default function AdminClassrooms() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-[180px]">
-                <DropdownMenuItem onClick={() => table.getColumn("status")?.setFilterValue("Đang hoạt động")}>Đang hoạt động</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => table.getColumn("status")?.setFilterValue("Đã lưu trữ")}>Đã lưu trữ</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => table.getColumn("status")?.setFilterValue("Vi phạm")}>Vi phạm</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => table.getColumn("status")?.setFilterValue("Active")}>Đang hoạt động</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => table.getColumn("status")?.setFilterValue("Locked")}>Đã khóa</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => table.getColumn("status")?.setFilterValue("")} className="font-bold text-slate-500">Tất cả trạng thái</DropdownMenuItem>
               </DropdownMenuContent>
@@ -446,7 +425,7 @@ export default function AdminClassrooms() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={columns.length} className="h-32 text-center text-slate-500 font-medium">
-                      Không tìm thấy kết quả nào.
+                      {isLoading ? "Đang tải dữ liệu..." : "Không tìm thấy kết quả nào."}
                     </TableCell>
                   </TableRow>
                 )}
@@ -485,7 +464,7 @@ export default function AdminClassrooms() {
 
       {/* RIGHT SIDEBAR - XEM NHANH */}
       {selectedClass && (
-        <div className="hidden md:flex w-[360px] bg-white border-l border-slate-200 fixed right-0 top-0 bottom-0 flex-col z-10 shadow-2xl animate-in slide-in-from-right-8">
+        <div className="hidden md:flex w-[360px] bg-white border-l border-slate-200 fixed right-0 top-0 bottom-0 flex-col z-[150] shadow-2xl animate-in slide-in-from-right-8">
           <div className="p-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
             <h3 className="font-bold text-slate-900 text-lg">Xem nhanh lớp học</h3>
             <button onClick={() => setSelectedClass(null)} className="text-slate-400 hover:text-slate-800 p-1.5 rounded hover:bg-slate-100 transition-colors">
@@ -494,14 +473,14 @@ export default function AdminClassrooms() {
           </div>
 
           <div className="p-6 flex flex-col gap-6 overflow-y-auto">
-            <div className={`h-40 rounded-xl border flex items-center justify-center ${selectedClass.status === 'Vi phạm' ? 'bg-red-50 border-red-100 text-red-600' : selectedClass.status === 'Đã lưu trữ' ? 'bg-slate-50 border-slate-100 text-slate-600' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
+            <div className={`h-40 rounded-xl border flex items-center justify-center ${selectedClass.status === 'Locked' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
               <GraduationCap size={56} weight="duotone" />
             </div>
 
             <div>
               <h2 className="text-xl font-bold text-slate-900 mb-2">{selectedClass.name}</h2>
-              <p className={`text-sm font-semibold flex items-center gap-1.5 ${selectedClass.status === 'Vi phạm' ? 'text-red-600' : selectedClass.status === 'Đã lưu trữ' ? 'text-slate-600' : 'text-blue-600'}`}>
-                Trạng thái: {selectedClass.status}
+              <p className={`text-sm font-semibold flex items-center gap-1.5 ${selectedClass.status === 'Locked' ? 'text-red-600' : 'text-blue-600'}`}>
+                Trạng thái: {selectedClass.status === 'Locked' ? 'Đã khóa' : 'Đang hoạt động'}
               </p>
             </div>
 

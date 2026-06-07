@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc",
-    "seed": "ts-node-dev --transpile-only src/scripts/seedAdmin.ts"
+    "seed": "ts-node-dev --transpile-only src/scripts/seedAdmin.ts",
+    "seed:classes": "ts-node-dev --transpile-only src/scripts/seedClasses.ts",
+    "seed:students": "ts-node-dev --transpile-only src/scripts/seedStudents.ts"
   },
   "keywords": [],
   "author": "",

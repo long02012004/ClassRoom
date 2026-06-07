@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { createAccountService, loginTeacherService, verifyRefreshToken, generateTokens } from '../services/authService';
+import { createAccountService, loginService, verifyRefreshToken, generateTokens } from '../services/authService';
 import { UserModel } from '../models/User';
 import { IUser } from '../models/User';
 
@@ -51,11 +51,11 @@ export const createStudentAccount = async (req: Request, res: Response, next: Ne
 };
 
 // [POST] /api/v1/auth/login
-export const loginTeacher = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
         const { email, password } = req.body;
 
-        const result = await loginTeacherService(email, password);
+        const result = await loginService(email, password);
 
         // Set refresh token vào HTTP-only cookie (không thể đọc bằng JS)
         res.cookie('refresh_token', result.refreshToken, REFRESH_COOKIE_OPTIONS);
@@ -109,7 +109,8 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
                     id: user._id,
                     name: user.name,
                     email: user.email,
-                    role: user.role
+                    role: user.role,
+                    status: user.status
                 }
             }
         });
@@ -137,7 +138,13 @@ export const getMe = async (req: AuthRequest, res: Response, next: NextFunction)
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                status: user.status,
+                avatar: user.avatar,
+                dob: user.dob,
+                gender: user.gender,
+                phone: user.phone,
+                address: user.address
             }
         });
     } catch (error) {

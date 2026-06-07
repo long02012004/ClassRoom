@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   DownloadSimple,
   Plus,
@@ -16,94 +16,44 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "../../../components/Styles/ToastContext";
-
-const trafficData = [
-  { name: "Thứ 2", value: 450 },
-  { name: "Thứ 3", value: 680 },
-  { name: "Thứ 4", value: 1200 },
-  { name: "Thứ 5", value: 850 },
-  { name: "Thứ 6", value: 1500 },
-  { name: "Thứ 7", value: 1800 },
-  { name: "CN", value: 1100 },
-];
-
-const recentActions = [
-  {
-    id: 1,
-    user: "Nguyễn Văn A",
-    action: "vừa tạo lớp Toán 10",
-    time: "5 phút trước",
-    avatar: "https://i.pravatar.cc/150?img=11",
-    badge: "Lớp học",
-    badgeColor: "bg-blue-50 text-blue-700 hover:bg-blue-100 border-transparent",
-    fallback: "A"
-  },
-  {
-    id: 2,
-    user: "Trần B",
-    action: "vừa báo lỗi quên mật khẩu",
-    time: "12 phút trước",
-    avatar: "https://i.pravatar.cc/150?img=12",
-    badge: "Hỗ trợ",
-    badgeColor: "bg-red-50 text-red-700 hover:bg-red-100 border-transparent",
-    fallback: "B"
-  },
-  {
-    id: 3,
-    user: "Lê Thị C",
-    action: "đã đăng bài tập mới môn Hóa",
-    time: "1 giờ trước",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    badge: "Bài tập",
-    badgeColor: "bg-orange-50 text-orange-700 hover:bg-orange-100 border-transparent",
-    fallback: "C"
-  },
-  {
-    id: 4,
-    user: "Hệ thống",
-    action: "đã hoàn thành sao lưu dữ liệu ngày",
-    time: "2 giờ trước",
-    avatar: "",
-    badge: "Hệ thống",
-    badgeColor: "bg-slate-100 text-slate-700 hover:bg-slate-200 border-transparent",
-    fallback: "HT",
-    isSystem: true
-  },
-  {
-    id: 5,
-    user: "Admin",
-    action: "đã thêm 50 tài khoản học sinh",
-    time: "3 giờ trước",
-    avatar: "https://i.pravatar.cc/150?img=15",
-    badge: "Người dùng",
-    badgeColor: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-transparent",
-    fallback: "AD"
-  }
-];
+import { dashboardService, type IDashboardStats } from "../../../service/dashboard.service";
 
 export default function AdminDashboard() {
   const toast = useToast();
+  const [stats, setStats] = useState<IDashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await dashboardService.getAdminStats();
+        if (res.data) {
+          setStats(res.data);
+        }
+      } catch (error: any) {
+        toast.error("Không thể tải dữ liệu thống kê: " + error.message, 3000);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, [toast]);
 
   const handleExportReport = () => {
     toast.success("Đang tải xuống báo cáo hệ thống...", 3000);
     
-    // Thêm BOM (Byte Order Mark) để Excel nhận diện đúng tiếng Việt UTF-8
     const bom = "\uFEFF";
-    // Đổi dấu phẩy sang dấu chấm phẩy để Excel vùng Việt Nam tự tách đúng cột
-    const csvContent = "STT;Tên chỉ số;Giá trị;Tăng trưởng\n1;Tổng học sinh;4820;+12%\n2;Tổng giáo viên;185;+3%\n3;Lớp đang hoạt động;142;0\n4;Tỷ lệ tương tác;86.5%;0";
+    const csvContent = `STT;Tên chỉ số;Giá trị;Tăng trưởng\n1;Tổng học sinh;${stats?.totalStudents || 0};0%\n2;Tổng giáo viên;${stats?.totalTeachers || 0};0%\n3;Lớp đang hoạt động;${stats?.activeClasses || 0};0\n4;Tỷ lệ tương tác;${stats?.engagementRate || 0}%;0`;
     
-    // Tạo Blob và URL
     const blob = new Blob([bom + csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     
-    // Tạo thẻ <a> ẩn để kích hoạt tải file
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", "Bao_Cao_He_Thong_Classroom.csv");
     document.body.appendChild(link);
     link.click();
     
-    // Dọn dẹp
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
@@ -138,7 +88,7 @@ export default function AdminDashboard() {
             </div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng học sinh</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-extrabold text-slate-900">4,820</h3>
+              <h3 className="text-3xl font-extrabold text-slate-900">{isLoading ? "..." : stats?.totalStudents?.toLocaleString() || 0}</h3>
               <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 +12% so với tháng trước
               </span>
@@ -154,7 +104,7 @@ export default function AdminDashboard() {
             </div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng giáo viên</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-extrabold text-slate-900">185</h3>
+              <h3 className="text-3xl font-extrabold text-slate-900">{isLoading ? "..." : stats?.totalTeachers?.toLocaleString() || 0}</h3>
               <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 +3%
               </span>
@@ -170,7 +120,7 @@ export default function AdminDashboard() {
             </div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Lớp học đang hoạt động</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-extrabold text-slate-900">142</h3>
+              <h3 className="text-3xl font-extrabold text-slate-900">{isLoading ? "..." : stats?.activeClasses?.toLocaleString() || 0}</h3>
             </div>
           </CardContent>
         </Card>
@@ -183,7 +133,7 @@ export default function AdminDashboard() {
             </div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tỷ lệ tương tác</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-extrabold text-slate-900">86.5%</h3>
+              <h3 className="text-3xl font-extrabold text-slate-900">{isLoading ? "..." : `${stats?.engagementRate || 0}%`}</h3>
               <span className="text-xs font-medium text-slate-500">
                 (Đang online / Làm bài tập)
               </span>
@@ -214,7 +164,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="flex-1 pt-6 min-h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trafficData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={stats?.trafficData || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#FE6747" stopOpacity={0.25}/>
@@ -261,7 +211,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="flex-1 p-0">
             <div className="flex flex-col divide-y divide-slate-100">
-              {recentActions.map((item) => (
+              {(stats?.recentActions || []).map((item) => (
                 <div key={item.id} className="p-4 hover:bg-slate-50 transition-colors flex gap-4">
                   <Avatar className="h-10 w-10 border border-slate-100 shadow-sm">
                     {item.avatar ? (

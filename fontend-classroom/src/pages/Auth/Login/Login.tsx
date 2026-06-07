@@ -36,7 +36,7 @@ const Login: React.FC = () => {
 
       // Redirect theo role
       if (user.role === 'admin') {
-        navigate("/admin/teachers");
+        navigate("/admin/users");
       } else if (user.role === 'teacher') {
         navigate("/classrooms");
       } else {
