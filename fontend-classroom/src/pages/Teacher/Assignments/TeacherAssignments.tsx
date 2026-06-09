@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus,
   Clock,
@@ -13,87 +13,32 @@ import {
   Image as ImageIcon,
   X,
   TrendUp,
+  Spinner,
+  FloppyDisk,
+  CaretDown,
 } from "phosphor-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../../../components/ui/dropdown-menu";
+import { classroomService } from "../../../service/classroom.service";
+import type { ITeacherClassroom } from "../../../service/classroom.service";
+import { gradebookService } from "../../../service/gradebook.service";
+import type { IAssignment, IGrade, IGradebookStudent } from "../../../service/gradebook.service";
+import { useToast } from "../../../components/Styles/ToastContext.tsx";
 import styles from "./TeacherAssignments.module.scss";
 
-// ── TABS ──
+// TABS
 const TABS = [
   { key: "all", label: "Tất cả" },
-  { key: "active", label: "Đang giao" },
-  { key: "draft", label: "Bản nháp" },
-  { key: "graded", label: "Đã chấm" },
+  { key: "mieng", label: "Điểm miệng" },
+  { key: "15phut", label: "Điểm 15 phút" },
+  { key: "giuaky", label: "Giữa kỳ" },
+  { key: "cuoiky", label: "Cuối kỳ" },
 ];
 
-// ── ASSIGNMENT TYPES ──
-const ASSIGNMENT_TYPES = [
-  "Bài tập về nhà",
-  "Bài kiểm tra",
-  "Bài thực hành",
-  "Dự án nhóm",
-  "Báo cáo",
-];
-
-// ── MOCK ASSIGNED LIST ──
-interface AssignedItem {
-  id: string;
-  title: string;
-  icon: string;
-  iconBg: string;
-  iconColor: string;
-  date: string;
-  submitted: number;
-  total: number;
-  status: "active" | "draft" | "graded";
-}
-
-const mockAssigned: AssignedItem[] = [
-  {
-    id: "a1",
-    title: "Đọc hiểu: Tác phẩm Tắt Đèn",
-    icon: "📖",
-    iconBg: "#dbeafe",
-    iconColor: "#2563eb",
-    date: "20/10/2023",
-    submitted: 32,
-    total: 45,
-    status: "active",
-  },
-  {
-    id: "a2",
-    title: "Giải phương trình bậc 2",
-    icon: "📐",
-    iconBg: "#d1fae5",
-    iconColor: "#059669",
-    date: "22/10/2023",
-    submitted: 15,
-    total: 45,
-    status: "active",
-  },
-  {
-    id: "a3",
-    title: "Báo cáo thực hành: Quang hợp",
-    icon: "🧪",
-    iconBg: "#fee2e2",
-    iconColor: "#dc2626",
-    date: "25/10/2023",
-    submitted: 0,
-    total: 45,
-    status: "draft",
-  },
-  {
-    id: "a4",
-    title: "Kiểm tra 15 phút: Lịch sử VN",
-    icon: "📝",
-    iconBg: "#fef3c7",
-    iconColor: "#d97706",
-    date: "18/10/2023",
-    submitted: 40,
-    total: 45,
-    status: "graded",
-  },
-];
-
-// ── CHART DATA ──
 const chartData = [
   { day: "Thứ 2", value: 65 },
   { day: "Thứ 3", value: 80 },
@@ -105,51 +50,176 @@ const chartData = [
 ];
 
 export default function TeacherAssignments() {
+  const toast = useToast();
+
+  const [classes, setClasses] = useState<ITeacherClassroom[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
+
+  const [students, setStudents] = useState<IGradebookStudent[]>([]);
+  const [assignments, setAssignments] = useState<IAssignment[]>([]);
+  const [grades, setGrades] = useState<IGrade[]>([]);
+
   const [activeTab, setActiveTab] = useState("all");
+  
+  // Form create assignment
   const [title, setTitle] = useState("");
   const [deadline, setDeadline] = useState("");
-  const [assignType, setAssignType] = useState("Bài tập về nhà");
+  const [assignCategory, setAssignCategory] = useState("15phut");
+  const [maxScore, setMaxScore] = useState(10);
   const [description, setDescription] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Filter assigned list by tab
-  const filteredAssigned =
-    activeTab === "all"
-      ? mockAssigned
-      : mockAssigned.filter((a) => a.status === activeTab);
+  const [loadingClasses, setLoadingClasses] = useState(true);
+  const [loadingData, setLoadingData] = useState(false);
+  const [creating, setCreating] = useState(false);
 
-  // File drag & drop
-  const handleDragOver = (e: React.DragEvent) => {
+  // Grading Modal State
+  const [selectedAssignment, setSelectedAssignment] = useState<IAssignment | null>(null);
+  const [showGradingModal, setShowGradingModal] = useState(false);
+  const [gradingScores, setGradingScores] = useState<{ [key: string]: string }>({});
+  const [gradingFeedbacks, setGradingFeedbacks] = useState<{ [key: string]: string }>({});
+  const [savingGrades, setSavingGrades] = useState(false);
+
+  const selectedClass = classes.find(c => c._id === selectedClassId);
+
+  // Load classrooms
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const res = await classroomService.getTeacherClassrooms();
+        if (res.data && res.data.length > 0) {
+          setClasses(res.data);
+          setSelectedClassId(res.data[0]._id);
+        }
+      } catch {
+        toast.error("Không thể tải danh sách lớp học");
+      } finally {
+        setLoadingClasses(false);
+      }
+    };
+    fetchClasses();
+  }, []);
+
+  // Load assignments & students grades
+  const loadData = useCallback(async () => {
+    if (!selectedClassId) return;
+    setLoadingData(true);
+    try {
+      const res = await gradebookService.getClassroomGrades(selectedClassId);
+      if (res.data) {
+        setStudents(res.data.students || []);
+        setAssignments(res.data.assignments || []);
+        setGrades(res.data.grades || []);
+      }
+    } catch {
+      toast.error("Không thể tải dữ liệu bài tập");
+    } finally {
+      setLoadingData(false);
+    }
+  }, [selectedClassId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Create Assignment
+  const handleCreateAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsDragging(true);
-  };
-  const handleDragLeave = () => setIsDragging(false);
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const dropped = Array.from(e.dataTransfer.files);
-    setFiles((prev) => [...prev, ...dropped]);
-  };
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles((prev) => [...prev, ...Array.from(e.target.files!)]);
+    if (!selectedClassId) {
+      toast.error("Vui lòng chọn lớp học!");
+      return;
+    }
+    if (!title || !deadline) {
+      toast.error("Vui lòng điền đủ Tiêu đề và Hạn nộp!");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await gradebookService.createAssignment({
+        classId: selectedClassId,
+        title,
+        dueDate: deadline,
+        maxScore,
+        category: assignCategory,
+        description,
+      });
+      toast.success("Giao bài tập mới thành công!");
+      setTitle("");
+      setDeadline("");
+      setAssignCategory("15phut");
+      setMaxScore(10);
+      setDescription("");
+      loadData();
+    } catch {
+      toast.error("Tạo bài tập thất bại!");
+    } finally {
+      setCreating(false);
     }
   };
-  const removeFile = (idx: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== idx));
+
+  // Open Grading Modal
+  const openGradingModal = (assignment: IAssignment) => {
+    setSelectedAssignment(assignment);
+    
+    // Pre-populate scores & feedbacks
+    const scoresMap: { [key: string]: string } = {};
+    const feedbacksMap: { [key: string]: string } = {};
+    
+    grades.forEach(g => {
+      if (g.assignmentId === assignment._id) {
+        scoresMap[g.studentId] = String(g.score);
+        feedbacksMap[g.studentId] = g.feedback || "";
+      }
+    });
+
+    setGradingScores(scoresMap);
+    setGradingFeedbacks(feedbacksMap);
+    setShowGradingModal(true);
   };
 
-  const getFileIcon = (name: string) => {
-    if (name.endsWith(".pdf")) return <FilePdf size={18} weight="fill" color="#ef4444" />;
-    if (name.endsWith(".docx") || name.endsWith(".doc")) return <FileDoc size={18} weight="fill" color="#3b82f6" />;
-    if (name.match(/\.(jpg|jpeg|png|gif)$/i)) return <ImageIcon size={18} weight="fill" color="#8b5cf6" />;
-    return <BookOpen size={18} weight="fill" color="#64748b" />;
+  // Save Grades & Feedbacks
+  const handleSaveGrades = async () => {
+    if (!selectedAssignment) return;
+    setSavingGrades(true);
+    try {
+      const gradesPayload = students
+        .map(student => {
+          const scoreVal = gradingScores[student._id];
+          const feedbackVal = gradingFeedbacks[student._id] || "";
+          if (scoreVal !== undefined && scoreVal !== "") {
+            return {
+              studentId: student._id,
+              score: Number(scoreVal),
+              feedback: feedbackVal
+            };
+          }
+          return null;
+        })
+        .filter(item => item !== null) as { studentId: string; score: number; feedback?: string }[];
+
+      await gradebookService.saveGrades({
+        assignmentId: selectedAssignment._id,
+        grades: gradesPayload
+      });
+
+      toast.success("Lưu điểm số và lời phê thành công!");
+      setShowGradingModal(false);
+      loadData();
+    } catch {
+      toast.error("Lưu điểm số thất bại!");
+    } finally {
+      setSavingGrades(false);
+    }
   };
 
-  const handleSubmit = () => {
-    alert(`Đã giao bài: "${title}" — Hạn nộp: ${deadline} — Loại: ${assignType}`);
+  // Filter assigned list by tab
+  const filteredAssignments =
+    activeTab === "all"
+      ? assignments
+      : assignments.filter((a) => a.category === activeTab);
+
+  const getSubmissionsCount = (assignmentId: string) => {
+    return grades.filter(g => g.assignmentId === assignmentId && g.score !== undefined).length;
   };
 
   const maxChartVal = Math.max(...chartData.map((d) => d.value));
@@ -158,7 +228,35 @@ export default function TeacherAssignments() {
     <div className={styles.container}>
       {/* ── TOP HEADER ── */}
       <div className={styles.topHeader}>
-        <h1 className={styles.pageTitle}>Quản lý bài tập</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <h1 className={styles.pageTitle}>Quản lý bài tập</h1>
+          {!loadingClasses && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={styles.dropdownTriggerBtn}>
+                  <span>
+                    {selectedClass
+                      ? `${selectedClass.name}${selectedClass.subject ? ` (${selectedClass.subject})` : ""}`
+                      : "Chọn lớp học"}
+                  </span>
+                  <CaretDown size={14} weight="bold" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56 bg-white border border-slate-200 shadow-lg rounded-xl p-1 z-50">
+                {classes.map((cls) => (
+                  <DropdownMenuItem
+                    key={cls._id}
+                    onClick={() => setSelectedClassId(cls._id)}
+                    className={`px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer flex justify-between items-center transition-colors ${selectedClassId === cls._id ? "bg-orange-50 text-orange-600 font-semibold" : ""
+                      }`}
+                  >
+                    {cls.name} {cls.subject ? `(${cls.subject})` : ""}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
         <div className={styles.tabs}>
           {TABS.map((tab) => (
             <button
@@ -176,7 +274,7 @@ export default function TeacherAssignments() {
       <div className={styles.mainGrid}>
         {/* LEFT – CREATE FORM */}
         <div className={styles.leftCol}>
-          <div className={styles.formCard}>
+          <form className={styles.formCard} onSubmit={handleCreateAssignment}>
             <div className={styles.formHeader}>
               <Plus size={20} weight="bold" />
               <h2>Tạo bài tập mới</h2>
@@ -191,6 +289,7 @@ export default function TeacherAssignments() {
                 placeholder="VD: Ôn tập chương 2 - Giải tích"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                required
               />
             </div>
 
@@ -203,22 +302,36 @@ export default function TeacherAssignments() {
                   className={styles.textInput}
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
+                  required
                 />
               </div>
               <div className={styles.formGroup}>
-                <label>Loại bài tập</label>
+                <label>Loại đầu điểm</label>
                 <select
                   className={styles.selectInput}
-                  value={assignType}
-                  onChange={(e) => setAssignType(e.target.value)}
+                  value={assignCategory}
+                  onChange={(e) => setAssignCategory(e.target.value)}
                 >
-                  {ASSIGNMENT_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
+                  <option value="mieng">Điểm miệng (Hệ số 1)</option>
+                  <option value="15phut">Điểm 15 phút (Hệ số 1)</option>
+                  <option value="giuaky">Điểm giữa kỳ (Hệ số 2)</option>
+                  <option value="cuoiky">Điểm cuối kỳ (Hệ số 3)</option>
                 </select>
               </div>
+            </div>
+
+            {/* Max Score */}
+            <div className={styles.formGroup}>
+              <label>Điểm tối đa</label>
+              <input
+                type="number"
+                className={styles.textInput}
+                value={maxScore}
+                onChange={(e) => setMaxScore(Number(e.target.value))}
+                min={1}
+                max={100}
+                required
+              />
             </div>
 
             {/* Description */}
@@ -233,65 +346,12 @@ export default function TeacherAssignments() {
               />
             </div>
 
-            {/* File Upload */}
-            <div className={styles.formGroup}>
-              <label>Tài liệu đính kèm</label>
-              <div
-                className={`${styles.dropZone} ${isDragging ? styles.dropZoneActive : ""}`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <CloudArrowUp size={36} weight="light" className={styles.uploadIcon} />
-                <p>
-                  Kéo thả file hoặc{" "}
-                  <span className={styles.chooseLink}>chọn tệp</span>
-                </p>
-                <span className={styles.uploadHint}>
-                  Hỗ trợ PDF, DOCX, JPG (Tối đa 20MB)
-                </span>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept=".pdf,.docx,.doc,.jpg,.jpeg,.png"
-                  hidden
-                  onChange={handleFileSelect}
-                />
-              </div>
-
-              {/* File list */}
-              {files.length > 0 && (
-                <div className={styles.fileList}>
-                  {files.map((f, i) => (
-                    <div key={i} className={styles.fileItem}>
-                      {getFileIcon(f.name)}
-                      <span className={styles.fileName}>{f.name}</span>
-                      <span className={styles.fileSize}>
-                        {(f.size / 1024).toFixed(0)} KB
-                      </span>
-                      <button
-                        className={styles.fileRemove}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeFile(i);
-                        }}
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Submit */}
-            <button className={styles.btnSubmit} onClick={handleSubmit}>
-              <Play size={18} weight="fill" />
-              Giao bài ngay
+            <button className={styles.btnSubmit} type="submit" disabled={creating}>
+              {creating ? <Spinner size={18} className={styles.spinning} /> : <Play size={18} weight="fill" />}
+              {creating ? "Đang giao..." : "Giao bài ngay"}
             </button>
-          </div>
+          </form>
         </div>
 
         {/* RIGHT – ASSIGNED LIST + CHART */}
@@ -299,27 +359,30 @@ export default function TeacherAssignments() {
           {/* Assigned List */}
           <div className={styles.assignedCard}>
             <div className={styles.assignedHeader}>
-              <h3>Bài tập đã giao</h3>
-              <button className={styles.viewAllBtn}>Xem tất cả</button>
+              <h3>Bài tập đã giao ({selectedClass?.name})</h3>
             </div>
 
             <div className={styles.assignedList}>
-              {filteredAssigned.map((item) => (
-                <div key={item.id} className={styles.assignedItem}>
+              {loadingData ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                  <Spinner size={32} className={styles.spinning} />
+                </div>
+              ) : filteredAssignments.map((item) => (
+                <div key={item._id} className={styles.assignedItem} style={{ cursor: 'pointer' }} onClick={() => openGradingModal(item)}>
                   <div
                     className={styles.assignedIcon}
-                    style={{ backgroundColor: item.iconBg }}
+                    style={{ backgroundColor: '#f1f5f9' }}
                   >
-                    <span>{item.icon}</span>
+                    <span>📝</span>
                   </div>
                   <div className={styles.assignedInfo}>
                     <h4>{item.title}</h4>
                     <div className={styles.assignedMeta}>
                       <span>
-                        <Clock size={12} /> {item.date}
+                        <Clock size={12} /> Hạn: {new Date(item.dueDate).toLocaleDateString('vi-VN')}
                       </span>
                       <span>
-                        <Users size={12} /> {item.submitted}/{item.total} đã nộp
+                        <Users size={12} /> {getSubmissionsCount(item._id)}/{students.length} đã chấm
                       </span>
                     </div>
                   </div>
@@ -329,7 +392,7 @@ export default function TeacherAssignments() {
                 </div>
               ))}
 
-              {filteredAssigned.length === 0 && (
+              {!loadingData && filteredAssignments.length === 0 && (
                 <div className={styles.emptyList}>
                   <BookOpen size={32} color="#cbd5e1" />
                   <p>Chưa có bài tập nào</p>
@@ -372,6 +435,67 @@ export default function TeacherAssignments() {
           </div>
         </div>
       </div>
+
+      {/* GRADING & FEEDBACK MODAL */}
+      {showGradingModal && selectedAssignment && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <h3>Chấm điểm & Lời phê</h3>
+                <p>Bài tập: <strong>{selectedAssignment.title}</strong> (Tối đa: {selectedAssignment.maxScore} điểm)</p>
+              </div>
+              <button onClick={() => setShowGradingModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              {students.length === 0 ? (
+                <p style={{ textAlign: 'center', color: '#64748b' }}>Lớp học này chưa có học sinh.</p>
+              ) : (
+                students.map((student) => (
+                  <div key={student._id} className={styles.studentGradingRow}>
+                    <div className={styles.studentMeta}>
+                      <span className={styles.studentName}>{student.name}</span>
+                      <span className={styles.studentEmail}>{student.email}</span>
+                    </div>
+                    <div className={styles.gradingInputs}>
+                      <input
+                        type="number"
+                        placeholder="Điểm"
+                        className={styles.scoreInput}
+                        min={0}
+                        max={selectedAssignment.maxScore}
+                        step="0.1"
+                        value={gradingScores[student._id] || ""}
+                        onChange={(e) => setGradingScores({ ...gradingScores, [student._id]: e.target.value })}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Nhập lời phê..."
+                        className={styles.feedbackInput}
+                        value={gradingFeedbacks[student._id] || ""}
+                        onChange={(e) => setGradingFeedbacks({ ...gradingFeedbacks, [student._id]: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className={styles.modalActions}>
+              <button className={styles.btnCancel} onClick={() => setShowGradingModal(false)}>
+                Hủy bỏ
+              </button>
+              <button className={styles.btnConfirm} onClick={handleSaveGrades} disabled={savingGrades}>
+                {savingGrades ? <Spinner size={16} className={styles.spinning} /> : <FloppyDisk size={16} />}
+                {savingGrades ? "Đang lưu..." : "Lưu điểm & lời phê"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

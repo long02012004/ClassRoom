@@ -6,6 +6,7 @@ export interface IAssignment extends Document {
     description: string;
     dueDate: Date;
     maxScore: number;
+    category: 'mieng' | '15phut' | 'giuaky' | 'cuoiky';
     createdAt: Date;
 }
 
@@ -15,6 +16,7 @@ const AssignmentSchema = new Schema<IAssignment>({
     description: { type: String, default: '' },
     dueDate: { type: Date, required: true },
     maxScore: { type: Number, default: 10 },
+    category: { type: String, enum: ['mieng', '15phut', 'giuaky', 'cuoiky'], default: '15phut' },
     createdAt: { type: Date, default: Date.now }
 });
 

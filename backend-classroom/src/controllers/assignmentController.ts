@@ -25,7 +25,7 @@ export const getAssignments = async (req: Request, res: Response, next: NextFunc
 // Tạo bài tập mới
 export const createAssignment = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-        const { classId, title, description, dueDate, maxScore } = req.body;
+                const { classId, title, description, dueDate, maxScore, category } = req.body;
         const teacherId = (req as any).user?.id;
 
         if (!classId || !title || !dueDate) {
@@ -43,7 +43,8 @@ export const createAssignment = async (req: Request, res: Response, next: NextFu
             title,
             description,
             dueDate: new Date(dueDate),
-            maxScore: maxScore || 10
+            maxScore: maxScore || 10,
+            category: category || '15phut'
         });
 
         res.status(201).json({

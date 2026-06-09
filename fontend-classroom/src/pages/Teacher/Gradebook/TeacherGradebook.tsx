@@ -52,6 +52,7 @@ export default function TeacherGradebook() {
   const [newDueDate, setNewDueDate] = useState("");
   const [newMaxScore, setNewMaxScore] = useState(10);
   const [newDescription, setNewDescription] = useState("");
+  const [newCategory, setNewCategory] = useState("15phut");
 
   const [loadingClasses, setLoadingClasses] = useState(true);
   const [loadingData, setLoadingData] = useState(false);
@@ -175,7 +176,8 @@ export default function TeacherGradebook() {
         title: newTitle,
         dueDate: newDueDate,
         maxScore: newMaxScore,
-        description: newDescription
+        description: newDescription,
+        category: newCategory
       });
       toast.success("Giao bài tập mới thành công!");
       // Reset form
@@ -183,6 +185,7 @@ export default function TeacherGradebook() {
       setNewDueDate("");
       setNewMaxScore(10);
       setNewDescription("");
+      setNewCategory("15phut");
       // Reload danh sách
       loadGradebook();
     } catch {
@@ -192,18 +195,31 @@ export default function TeacherGradebook() {
     }
   };
 
-  // Tính điểm trung bình của học sinh dựa theo các điểm số nhập vào
+  // Tính điểm trung bình của học sinh dựa theo các điểm số nhập vào (quy đổi về thang điểm 10)
   const calculateStudentAvg = (studentId: string) => {
-    let sum = 0;
-    let count = 0;
+    let sumWeightedScores = 0;
+    let sumWeights = 0;
+
+    const categoryWeights: Record<string, number> = {
+      mieng: 1,
+      "15phut": 1,
+      giuaky: 2,
+      cuoiky: 3,
+    };
+
     assignments.forEach(a => {
       const val = editingScores[`${studentId}_${a._id}`];
       if (val !== undefined && val !== "") {
-        sum += Number(val);
-        count++;
+        const score = Number(val);
+        const weight = categoryWeights[a.category] || 1;
+        // Quy đổi điểm về thang 10 nếu maxScore khác 10
+        const normalizedScore = a.maxScore > 0 ? (score / a.maxScore) * 10 : score;
+        sumWeightedScores += normalizedScore * weight;
+        sumWeights += weight;
       }
     });
-    return count > 0 ? sum / count : null;
+
+    return sumWeights > 0 ? sumWeightedScores / sumWeights : null;
   };
 
   const getRank = (avg: number | null) => {
@@ -282,9 +298,21 @@ export default function TeacherGradebook() {
               <thead>
                 <tr>
                   <th className={styles.colStudent} style={{ textAlign: 'left' }}>Học sinh</th>
-                  {assignments.map(a => (
-                    <th key={a._id} style={{ minWidth: 120 }}>{a.title}</th>
-                  ))}
+                  {assignments.map(a => {
+                    const categoryLabels: Record<string, string> = {
+                      mieng: "M miệng",
+                      "15phut": "15 phút",
+                      giuaky: "Giữa kỳ",
+                      cuoiky: "Cuối kỳ",
+                    };
+                    const label = categoryLabels[a.category] || "15 phút";
+                    return (
+                      <th key={a._id} style={{ minWidth: 120 }}>
+                        <div style={{ fontSize: '0.75rem', opacity: 0.7, textTransform: 'uppercase', marginBottom: 2 }}>{label}</div>
+                        <div>{a.title}</div>
+                      </th>
+                    );
+                  })}
                   <th className={styles.colAvg}>ĐTB</th>
                   <th className={styles.colRank}>Xếp loại</th>
                 </tr>
@@ -347,69 +375,8 @@ export default function TeacherGradebook() {
       {/* 2. BOTTOM SECTION: 2 COLUMNS */}
       <section className={styles.bottomSection}>
 
-        {/* LEFT COLUMN: Giao bài tập mới */}
-        <div className={styles.leftColumn}>
-          <div className={styles.cardHeader}>
-            <h3>Giao bài tập mới</h3>
-          </div>
-          <form className={styles.cardContent} onSubmit={handleCreateAssignment}>
-            <div className={styles.formGroup}>
-              <label>Tiêu đề bài tập</label>
-              <input
-                type="text"
-                placeholder="Nhập tên bài tập..."
-                className={styles.formInput}
-                value={newTitle}
-                onChange={e => setNewTitle(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Hạn nộp</label>
-                <div className={styles.dateInputWrapper}>
-                  <input
-                    type="date"
-                    className={styles.formInput}
-                    value={newDueDate}
-                    onChange={e => setNewDueDate(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-              <div className={styles.formGroup}>
-                <label>Điểm tối đa</label>
-                <input
-                  type="number"
-                  className={styles.formInput}
-                  value={newMaxScore}
-                  onChange={e => setNewMaxScore(Number(e.target.value))}
-                  min={1}
-                  max={100}
-                />
-              </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <label>Mô tả chi tiết</label>
-              <textarea
-                placeholder="Yêu cầu học sinh làm bài..."
-                className={styles.formTextarea}
-                rows={4}
-                value={newDescription}
-                onChange={e => setNewDescription(e.target.value)}
-              ></textarea>
-            </div>
-
-            <button type="submit" className={styles.btnSubmit} disabled={creatingTask}>
-              {creatingTask ? "Đang giao..." : "Giao bài ngay"}
-            </button>
-          </form>
-        </div>
-
         {/* RIGHT COLUMN: Danh sách & Tổng quan */}
-        <div className={styles.rightColumn}>
+        <div className={styles.rightColumn} style={{ flex: 1 }}>
 
           <div className={styles.listHeader}>
             <h3>Danh sách bài đã giao</h3>
@@ -430,7 +397,11 @@ export default function TeacherGradebook() {
                     </div>
                     <div className={styles.taskInfo}>
                       <h4>{task.title}</h4>
-                      <p>Hạn nộp: {new Date(task.dueDate).toLocaleDateString('vi-VN')} • Max: {task.maxScore} điểm</p>
+                      <p>
+                        {task.category === 'mieng' ? 'Điểm miệng' :
+                         task.category === '15phut' ? 'Điểm 15 phút' :
+                         task.category === 'giuaky' ? 'Điểm giữa kỳ' : 'Điểm cuối kỳ'} (Hệ số {task.category === 'giuaky' ? 2 : task.category === 'cuoiky' ? 3 : 1}) • Hạn nộp: {new Date(task.dueDate).toLocaleDateString('vi-VN')} • Max: {task.maxScore} điểm
+                      </p>
                     </div>
                   </div>
 

@@ -8,6 +8,7 @@ export interface IAssignment {
   description: string;
   dueDate: string;
   maxScore: number;
+  category: 'mieng' | '15phut' | 'giuaky' | 'cuoiky';
   createdAt: string;
 }
 
@@ -53,6 +54,7 @@ export const gradebookService = {
     description?: string;
     dueDate: string;
     maxScore?: number;
+    category?: string;
   }): Promise<IBackendRes<IAssignment>> => {
     return await api.post(`/api/v1/assignments`, data);
   },

@@ -6,6 +6,7 @@ import classroomRoutes from './classroomRoutes';
 import attendanceRoutes from './attendanceRoutes';
 import assignmentRoutes from './assignmentRoutes';
 import gradeRoutes from './gradeRoutes';
+import scheduleRoutes from './scheduleRoutes';
 
 const apiRouter = Router();
 
@@ -17,6 +18,7 @@ apiRouter.use('/classrooms', classroomRoutes);
 apiRouter.use('/attendance', attendanceRoutes);
 apiRouter.use('/assignments', assignmentRoutes);
 apiRouter.use('/grades', gradeRoutes);
+apiRouter.use('/schedule', scheduleRoutes);
 
 // Sau này bạn phát triển thêm chức năng học sinh thì chỉ cần thêm ở đây:
 // apiRouter.use('/students', studentRoutes);

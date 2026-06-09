@@ -1,8 +1,10 @@
+@use "../../../components/Styles/variables.module" as vars;
+
 .gradebookContainer {
   padding: 24px;
   background-color: #f8fafc;
   min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  font-family: vars.$font-main;
   color: #1e293b;
 }
 
@@ -276,7 +278,7 @@
 /* SECTION 2: BOTTOM 2 COLUMNS */
 .bottomSection {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 24px;
 
   @media (max-width: 1024px) {
